@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TucompassPjApplication {
+public class Tucompass {
 
 	public static void main(String[] args) {
-		SpringApplication.run(TucompassPjApplication.class, args);
+		SpringApplication.run(Tucompass.class, args);
 	}
 
 }
