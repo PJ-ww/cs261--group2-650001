@@ -2,6 +2,7 @@ let map;
 let userLocation = null;
 let userMarker = null;
 let accuracyCircle = null;
+let infoWindow = null;
 
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -18,6 +19,10 @@ async function initMap() {
     };
 
     map = new google.maps.Map(document.getElementById("map"), mapOptions);
+    infoWindow = new google.maps.InfoWindow();
+
+     // สร้าง InfoWindow Object ไว้ใช้ซ้ำ
+    infoWindow = new google.maps.InfoWindow();
 
     // ส่วนติดตามตำแหน่งผู้ใช้ (Real-time Geolocation) 
     if (navigator.geolocation) {
@@ -64,19 +69,79 @@ async function initMap() {
     
      // ดึงข้อมูลสถานที่ และ Render Markers 
     try {
-        const response = await fetch('http://localhost:8080/api/locations');
-        if (!response.ok) {
-             throw new Error(`HTTP error! สถานะ: ${response.status}`);
-        }
-        const locations = await response.json();
+
+            // =========================================================
+            // ปรับปรุง: ใช้ MOCK DATA แทนการเรียก Fetch API
+            // =========================================================
+
+            /*
+            const response = await fetch('http://localhost:8080/api/locations');
+            if (!response.ok) {
+                throw new Error(`HTTP error! สถานะ: ${response.status}`);
+            }
+            const locations = await response.json();
+            */
+
+            const locations = MOCK_LOCATIONS_DATA; // <<< ใช้ข้อมูลจำลอง
         
-        locations.forEach(location => {
+            locations.forEach(location => {
             
-            // ใช้ location.latitude และ location.longitude 
-            const marker = new google.maps.Marker({
-                position: { lat: location.latitude, lng: location.longitude }, 
-                map: map,
-                title: location.name 
+                // ใช้ location.latitude และ location.longitude 
+                const marker = new google.maps.Marker({
+                    position: { lat: location.latitude, lng: location.longitude }, 
+                    map: map,
+                    title: location.name 
+                });
+
+                // =========================================================
+                // U3. Task 3.4: แสดงข้อมูลเบื้องต้นเมื่อคลิกที่หมุด
+                // =========================================================
+
+                marker.addListener('click', () => {
+            
+                    // 1. สร้างเนื้อหา HTML สำหรับ Popup (ใช้ข้อมูลจาก Mock Data)
+                    const content = `
+                        <div class="place-popup">
+                            <h4>${location.name} (${location.shortName})</h4>
+                            <p>เวลาทำการ: ${location.workingHours || 'N/A'}</p> 
+                            <p>สถานะความหนาแน่น: <b>${location.densityStatus || 'N/A'}</b></p>
+                    
+                            <button class="details-btn" 
+                                    data-shortname="${location.shortName}"
+                                    onclick="infoWindow.close(); fetchAndDisplayDetails(this.getAttribute('data-shortname'));">
+                                ดูรายละเอียด (Task 3.5)
+                            </button>
+                        </div>
+                        `;
+            
+                    // 2. ตั้งค่าเนื้อหาและเปิด Popup ที่ Marker ที่ถูกคลิก
+                    infoWindow.setContent(content);
+                    infoWindow.open(map, marker);
+                });
+
+                /*
+                marker.addListener('click', () => {
+            
+                    // 1. สร้างเนื้อหา HTML สำหรับ Popup (ใช้ข้อมูลที่มีอยู่แล้ว)
+                    const content = `
+                        <div class="place-popup">
+                            <h4>${location.name}</h4>
+                            <p>รหัสย่อ: <b>${location.shortName}</b></p>
+                            <p>สถานะความหนาแน่น: ${location.densityStatus || 'N/A'}</p>
+                            <button class="details-btn" 
+                                    data-shortname="${location.shortName}"
+                                    onclick="fetchAndDisplayDetails(this.getAttribute('data-shortname')); infoWindow.close();">
+                                ดูรายละเอียด (Task 3.5)
+                            </button>
+                        </div>
+                    `;
+            
+                    // 2. ตั้งค่าเนื้อหาและเปิด Popup ที่ Marker ที่ถูกคลิก
+                    infoWindow.setContent(content);
+                    infoWindow.open(map, marker);
+                });
+                */
+        
             });
 
             // ผูก Event Click สำหรับ Task ถัดไป
@@ -89,14 +154,23 @@ async function initMap() {
             const infoWindow = new google.maps.InfoWindow({
                 content: `<b>${location.shortName}</b><br>ความหนาแน่น: ${location.densityStatus || 'N/A'}`
             });
-            marker.addListener('mouseover', () => infoWindow.open(map, marker));
-            marker.addListener('mouseout', () => infoWindow.close());
-        });
-        
-    } catch (error) {
+            //marker.addListener('mouseover', () => infoWindow.open(map, marker));
+            //marker.addListener('mouseout', () => infoWindow.close());
+
+         
+    }
+    catch (error) {
         console.error('Error fetching locations:', error);
     }
+        
+    // U 3.4
+    marker.addListener('click', () => {
+    // เรียกฟังก์ชันแสดงรายละเอียด (ใช้ shortName ในการค้นหาใน Backend)
+    fetchAndDisplayDetails(location.shortName); // <--- ส่วนนี้คือจุดที่เราจะเพิ่ม Popup/Side Panel
+    });
 }
+
+
 
 function updateUserLocationMarker(location, accuracy) {
     if (!userMarker) {
@@ -156,18 +230,176 @@ function setupMapControls() {
     if (searchBtn) {
         searchBtn.addEventListener('click', () => {
             const searchTerm = searchInput.value.trim();
-            // เมื่อกดปุ่มค้นหา ให้เรียก API รายละเอียดของเรา
+            
+            // ใช้ค่าจาก Autocomplete แทน ถ้ามีค่า
+            // *หมายเหตุ: ถ้าผู้ใช้เลือกจาก Autocomplete, searchInput.value จะถูกตั้งค่าโดย Autocomplete Listener แล้ว*
+            
             if (searchTerm) {
+                // 1. เรียกฟังก์ชันค้นหาสถานที่ของเราจาก Backend
                 fetchAndDisplayDetails(searchTerm); 
             } else {
-                alert("กรุณาป้อนชื่อสถานที่ย่อ (เช่น SC3)");
+                alert("กรุณาป้อนชื่อสถานที่ย่อ (เช่น SC3) หรือเลือกจากคำแนะนำการค้นหา");
             }
         });
     }
 } 
 
-function fetchAndDisplayDetails(searchTerm) {
+
+/**
+ * ค้นหารายละเอียดสถานที่จาก Mock Data และแสดงผลบนแผนที่ (Task 3.5 และ U4)
+ * @param {string} searchTerm - ชื่อสถานที่ย่อ (shortName) ที่ใช้ค้นหา
+ */
+async function fetchAndDisplayDetails(searchTerm) {
     console.log("Detail request initiated for:", searchTerm);
-    // Logic: 1. Fetch /api/details?search={searchTerm} 
-    //        2. Display Details Modal
+    
+    // ค้นหาสถานที่จาก Mock Data
+    const locationDetails = MOCK_LOCATIONS_DATA.find(loc => 
+        loc.shortName.toLowerCase() === searchTerm.toLowerCase()
+    );
+    
+    if (!locationDetails) {
+        alert(`ไม่พบสถานที่ '${searchTerm}' ในข้อมูลจำลอง`);
+        return;
+    }
+
+    const position = { 
+        lat: locationDetails.latitude, 
+        lng: locationDetails.longitude 
+    };
+
+    // 1. Move Map: ขยับแผนที่และซูมไปยังตำแหน่งที่ค้นพบ
+    map.setCenter(position);
+    map.setZoom(17); 
+    
+    // 2. Display Popup: สร้าง Marker ชั่วคราวและเปิด Popup
+    
+    const content = `
+        <div class="place-popup">
+            <h4>${locationDetails.name} (${locationDetails.shortName})</h4>
+            <p>เวลาทำการ: ${locationDetails.workingHours || 'N/A'}</p> 
+            <p>สถานะความหนาแน่น: <b>${locationDetails.densityStatus || 'N/A'}</b></p>
+            <p>คำอธิบาย: ${locationDetails.detailDescription}</p>
+            <button class="details-btn" 
+                    onclick="alert('แสดงรายละเอียดเต็มของ ${locationDetails.name} (Task 3.5)'); infoWindow.close();">
+                ดูรายละเอียดเติม
+            </button>
+        </div>
+    `;
+    
+    const tempMarker = new google.maps.Marker({
+        position: position,
+        map: map,
+        title: locationDetails.name
+    });
+
+    infoWindow.setContent(content);
+    infoWindow.open(map, tempMarker);
+
+    // ลบ Marker ชั่วคราวเมื่อ Popup ปิด
+    google.maps.event.addListener(infoWindow, 'closeclick', function() {
+        tempMarker.setMap(null); 
+    });
 }
+
+
+// เชิ่อมกับbackend
+/*
+async function fetchAndDisplayDetails(searchTerm) {
+    console.log("Detail request initiated for:", searchTerm);
+    
+    try {
+        // 1. Fetch Data: ดึงข้อมูลสถานที่จาก Backend (สมมติว่า API ตอบกลับด้วย Object สถานที่เดียว)
+        const response = await fetch(`http://localhost:8080/api/details?search=${searchTerm}`);
+        if (!response.ok) {
+            alert(`ไม่พบสถานที่ '${searchTerm}' ในระบบของเรา`);
+            return;
+        }
+        
+        const locationDetails = await response.json();
+        
+        // ตรวจสอบว่ามีข้อมูล Lat/Lng ครบถ้วน
+        if (!locationDetails.latitude || !locationDetails.longitude) {
+            console.error("ข้อมูลสถานที่ไม่มีพิกัด Lat/Lng ที่ถูกต้อง");
+            return;
+        }
+
+        const position = { 
+            lat: locationDetails.latitude, 
+            lng: locationDetails.longitude 
+        };
+
+        // 2. Move Map: ขยับแผนที่และซูมไปยังตำแหน่งที่ค้นพบ
+        map.setCenter(position);
+        map.setZoom(17); 
+        
+        // *หมายเหตุ: ถ้าต้องการให้มี Marker ชั่วคราวปรากฏที่ตำแหน่งที่ค้นหา ให้สร้าง Marker ใหม่ที่นี่*
+        
+        // 3. Display Popup: แสดงข้อมูลเบื้องต้นใน Infowindow (Popup) ทันที
+        
+        const content = `
+            <div class="place-popup">
+                <h4>${locationDetails.name} (${locationDetails.shortName})</h4>
+                <p>สถานะความหนาแน่น: <b>${locationDetails.densityStatus || 'N/A'}</b></p>
+                <button class="details-btn" 
+                        data-shortname="${locationDetails.shortName}"
+                        onclick="infoWindow.close(); fetchAndDisplayDetails(this.getAttribute('data-shortname'));">
+                    ดูรายละเอียดเต็ม (Task 3.5)
+                </button>
+            </div>
+        `;
+        
+        // สร้าง Marker ชั่วคราวเพื่อใช้เป็น Anchor ของ Popup
+        const tempMarker = new google.maps.Marker({
+            position: position,
+            map: map,
+            title: locationDetails.name
+        });
+
+        // เปิด Popup ที่ตำแหน่ง Marker ชั่วคราว
+        infoWindow.setContent(content);
+        infoWindow.open(map, tempMarker);
+
+        // (***สำคัญ: อาจต้องลบ Marker ชั่วคราวออกเมื่อ Popup ปิด หากคุณไม่ต้องการให้มี Marker ซ้ำซ้อน***)
+        google.maps.event.addListener(infoWindow, 'closeclick', function() {
+            tempMarker.setMap(null); // ลบ Marker ชั่วคราว
+        });
+        
+    } catch (error) {
+        console.error('Error in fetching and displaying details:', error);
+        alert("เกิดข้อผิดพลาดในการดึงข้อมูลสถานที่ กรุณาลองใหม่อีกครั้ง");
+    }
+}*/
+
+/**
+ * Mock Data: ข้อมูลสถานที่จำลอง (ใช้แทนข้อมูลที่ดึงจาก Backend)
+ */
+const MOCK_LOCATIONS_DATA = [
+    {
+        name: "อาคารเรียนรวม 3 ",
+        shortName: "SC3",
+        latitude: 14.0754,
+        longitude: 100.6052,
+        densityStatus: "ปานกลาง",
+        // ข้อมูลเพิ่มเติมสำหรับ Popup
+        workingHours: "จ.-ศ. 8:00-20:00",
+        detailDescription: "อาคารเรียนหลักสำหรับคณะวิทยาศาสตร์และเทคโนโลยี"
+    },
+    {
+        name: "สำนักงานอธิการบดี",
+        shortName: "โดม",
+        latitude: 14.0718,
+        longitude: 100.6030,
+        densityStatus: "ว่าง",
+        workingHours: "จ.-ศ. 8:30-16:30",
+        detailDescription: "อาคารศูนย์กลางการบริหารมหาวิทยาลัย"
+    },
+    {
+        name: "ศูนย์หนังสือมหาวิทยาลัยธรรมศาสตร์",
+        shortName: "Bookstore",
+        latitude: 14.0730,
+        longitude: 100.6015,
+        densityStatus: "หนาแน่น",
+        workingHours: "ทุกวัน 9:00-18:00",
+        detailDescription: "แหล่งรวมตำราเรียนและอุปกรณ์การศึกษา"
+    }
+];
