@@ -109,7 +109,7 @@ async function initMap() {
                             <button class="details-btn" 
                                     data-shortname="${location.shortName}"
                                     onclick="infoWindow.close(); fetchAndDisplayDetails(this.getAttribute('data-shortname'));">
-                                ดูรายละเอียด (Task 3.5)
+                                ดูรายละเอียด 
                             </button>
                         </div>
                         `;
@@ -145,6 +145,7 @@ async function initMap() {
             });
 
             // ผูก Event Click สำหรับ Task ถัดไป
+            /*
             marker.addListener('click', () => {
                 // เรียกฟังก์ชันแสดงรายละเอียด (ใช้ shortName ในการค้นหาใน Backend)
                 fetchAndDisplayDetails(location.shortName); 
@@ -156,6 +157,7 @@ async function initMap() {
             });
             //marker.addListener('mouseover', () => infoWindow.open(map, marker));
             //marker.addListener('mouseout', () => infoWindow.close());
+            */
 
          
     }
@@ -163,11 +165,6 @@ async function initMap() {
         console.error('Error fetching locations:', error);
     }
         
-    // U 3.4
-    marker.addListener('click', () => {
-    // เรียกฟังก์ชันแสดงรายละเอียด (ใช้ shortName ในการค้นหาใน Backend)
-    fetchAndDisplayDetails(location.shortName); // <--- ส่วนนี้คือจุดที่เราจะเพิ่ม Popup/Side Panel
-    });
 }
 
 
@@ -227,6 +224,25 @@ function setupMapControls() {
     const searchBtn = document.querySelector('.search-btn'); 
     const searchInput = document.getElementById('search-input');
 
+    // =========================================================
+    //  เพิ่มการค้นหาเมื่อกดปุ่ม Enter
+    // =========================================================
+    if (searchInput) {
+        searchInput.addEventListener('keypress', (event) => {
+            // ตรวจสอบว่าคีย์ที่กดคือ Enter (key 13)
+            if (event.key === 'Enter') {
+                event.preventDefault(); // ป้องกันการ Submit form มาตรฐาน
+                const searchTerm = searchInput.value.trim();
+                
+                if (searchTerm) {
+                    // เรียกฟังก์ชันค้นหาสถานที่
+                    fetchAndDisplayDetails(searchTerm); 
+                }
+            }
+        });
+    }
+    // ---------------------------------------------------------
+
     if (searchBtn) {
         searchBtn.addEventListener('click', () => {
             const searchTerm = searchInput.value.trim();
@@ -278,12 +294,12 @@ async function fetchAndDisplayDetails(searchTerm) {
             <h4>${locationDetails.name} (${locationDetails.shortName})</h4>
             <p>เวลาทำการ: ${locationDetails.workingHours || 'N/A'}</p> 
             <p>สถานะความหนาแน่น: <b>${locationDetails.densityStatus || 'N/A'}</b></p>
-            <p>คำอธิบาย: ${locationDetails.detailDescription}</p>
+            
             <button class="details-btn" 
                     onclick="alert('แสดงรายละเอียดเต็มของ ${locationDetails.name} (Task 3.5)'); infoWindow.close();">
                 ดูรายละเอียดเติม
             </button>
-        </div>
+        </div>               
     `;
     
     const tempMarker = new google.maps.Marker({
