@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Profile - Login</title>
+
+	<!-- ✅ เรียกจาก static -->
+	<link rel="stylesheet" href="/login-style.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+	<div class="header">
+		<i class="fas fa-arrow-left header-icon"></i>
+		<h1 class="header-title">Profile</h1>
+	</div>
+
+	<main class="profile-content">
+		<div class="avatar-container">
+			<div class="avatar-circle">
+				<i class="fas fa-user avatar-icon"></i>
+			</div>
+		</div>
+
+		<p class="login-message">
+			Login to TU Compass with TU account
+		</p>
+		<p class="function-message">
+			for <span class="bold">more function!</span>
+		</p>
+
+		<!-- ✅ form ส่งไปที่ Spring Security -->
+		<form class="login-form" action="/process-login" method="post">
+			<input name="username" type="text" placeholder="Email / Student ID" class="input-field" required>
+			<input name="password" type="password" placeholder="Password" class="input-field" required>
+
+			<button type="submit" class="sign-in-button">
+				Sign in
+			</button>
+
+			<!-- ✅ แสดงข้อความ error ถ้ามี -->
+			<div th:if="${param.error}" style="color:red; margin-top:10px;">
+				Invalid username or password.
+			</div>
+			<div th:if="${param.logout}" style="color:green; margin-top:10px;">
+				You have been logged out.
+			</div>
+		</form>
+
+		<a href="#" class="guest-link">Use for guest</a>
+	</main>
+
+	<footer class="footer-nav">
+		<div class="nav-item">
+			<i class="fas fa-home"></i>
+			<span class="nav-label">Home</span>
+		</div>
+		<div class="nav-item">
+			<i class="fas fa-bookmark"></i>
+			<span class="nav-label">Favorites</span>
+		</div>
+		<div class="nav-item active">
+			<i class="fas fa-user"></i>
+			<span class="nav-label">Profile</span>
+		</div>
+	</footer>
+
+	<!-- ✅ โหลด JS จาก static -->
+	<script src="/login.js"></script>
+</body>
+</html>
