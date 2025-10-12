@@ -106,13 +106,11 @@ async function initMap() {
                             <p>เวลาทำการ: ${location.workingHours || 'N/A'}</p> 
                             <p>สถานะความหนาแน่น: <b>${location.densityStatus || 'N/A'}</b></p>
                     
-                            <button class="details-btn" 
-                                    data-shortname="${location.shortName}"
-                                    onclick="infoWindow.close(); fetchAndDisplayDetails(this.getAttribute('data-shortname'));">
+                            <a href="detail.html?shortName=${location.shortName}" class="details-btn">
                                 ดูรายละเอียด 
-                            </button>
+                            </a>
                         </div>
-                        `;
+                    `;
             
                     // 2. ตั้งค่าเนื้อหาและเปิด Popup ที่ Marker ที่ถูกคลิก
                     infoWindow.setContent(content);
@@ -295,23 +293,24 @@ async function fetchAndDisplayDetails(searchTerm) {
             <p>เวลาทำการ: ${locationDetails.workingHours || 'N/A'}</p> 
             <p>สถานะความหนาแน่น: <b>${locationDetails.densityStatus || 'N/A'}</b></p>
             
-            <button class="details-btn" 
-                    onclick="alert('แสดงรายละเอียดเต็มของ ${locationDetails.name} (Task 3.5)'); infoWindow.close();">
-                ดูรายละเอียดเติม
-            </button>
+            <a href="detail.html?shortName=${locationDetails.shortName}" class="details-btn">
+                ดูรายละเอียด 
+            </a>
         </div>               
     `;
-    
+
+   // 3. เปิด Popup ที่ตำแหน่งนั้น
+    infoWindow.setContent(content);
+    // สร้าง Marker ชั่วคราวเพื่อใช้เปิด infoWindow (หากไม่มี Marker ของสถานที่นั้นอยู่แล้ว)
     const tempMarker = new google.maps.Marker({
         position: position,
         map: map,
         title: locationDetails.name
     });
 
-    infoWindow.setContent(content);
     infoWindow.open(map, tempMarker);
-
-    // ลบ Marker ชั่วคราวเมื่อ Popup ปิด
+    
+    // ลบ Marker ชั่วคราวเมื่อ Pop-up ถูกปิด เพื่อไม่ให้มี Marker ซ้ำซ้อน
     google.maps.event.addListener(infoWindow, 'closeclick', function() {
         tempMarker.setMap(null); 
     });
@@ -386,19 +385,18 @@ async function fetchAndDisplayDetails(searchTerm) {
     }
 }*/
 
-/**
- * Mock Data: ข้อมูลสถานที่จำลอง (ใช้แทนข้อมูลที่ดึงจาก Backend)
- */
+// Mock Data: ข้อมูลสถานที่จำลอง (ใช้แทนข้อมูลที่ดึงจาก Backend)
 const MOCK_LOCATIONS_DATA = [
     {
-        name: "อาคารเรียนรวม 3 ",
+        name: "อาคารเรียนรวมสังคมศาสตร์ 3",
         shortName: "SC3",
         latitude: 14.0754,
         longitude: 100.6052,
-        densityStatus: "ปานกลาง",
-        // ข้อมูลเพิ่มเติมสำหรับ Popup
-        workingHours: "จ.-ศ. 8:00-20:00",
-        detailDescription: "อาคารเรียนหลักสำหรับคณะวิทยาศาสตร์และเทคโนโลยี"
+        densityStatus: "มาก",
+        workingHoursWeekday: "8.00-16.30", 
+        workingHoursWeekend: "ปิดทำการ",
+        detailDescription: "อาคารเรียนหลักสำหรับคณะวิทยาศาสตร์และเทคโนโลยีและสังคมศาสตร์...",
+        imagePath: "/image/sc3.jpg"
     },
     {
         name: "สำนักงานอธิการบดี",
@@ -406,16 +404,20 @@ const MOCK_LOCATIONS_DATA = [
         latitude: 14.0718,
         longitude: 100.6030,
         densityStatus: "ว่าง",
-        workingHours: "จ.-ศ. 8:30-16:30",
-        detailDescription: "อาคารศูนย์กลางการบริหารมหาวิทยาลัย"
+        workingHoursWeekday: "8:30-16:30",
+        workingHoursWeekend: "ปิดทำการ",
+        detailDescription: "อาคารศูนย์กลางการบริหารมหาวิทยาลัย",
+        imagePath: "" 
     },
     {
         name: "ศูนย์หนังสือมหาวิทยาลัยธรรมศาสตร์",
         shortName: "Bookstore",
         latitude: 14.0730,
         longitude: 100.6015,
-        densityStatus: "หนาแน่น",
-        workingHours: "ทุกวัน 9:00-18:00",
-        detailDescription: "แหล่งรวมตำราเรียนและอุปกรณ์การศึกษา"
+        densityStatus: "ปานกลาง",
+        workingHoursWeekday: "9:00-18:00",
+        workingHoursWeekend: "9:00-18:00",
+        detailDescription: "แหล่งรวมตำราเรียนและอุปกรณ์การศึกษา",
+        imagePath: "/image/โดม.jpg" 
     }
 ];

@@ -36,8 +36,8 @@ body, html {
 /* Search Container */
 .search-container {
     position: absolute;
-     top: 70px; 
-     left: 50%;
+    top: 70px; 
+    left: 50%;
     transform: translateX(-50%); 
     width: 90%;
     background-color: white; 
