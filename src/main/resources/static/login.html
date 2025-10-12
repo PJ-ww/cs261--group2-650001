@@ -30,10 +30,10 @@
 		</p>
 
 		<form class="login-form">
-			<input type="text" placeholder="Email / Student ID" class="input-field">
-			<input type="password" placeholder="Password" class="input-field">
+			<input id="studentId" type="text" placeholder="Email / Student ID" class="input-field">
+			<input id="citizenId" type="password" placeholder="Password" class="input-field">
 
-			<button type="button" class="sign-in-button" onclick="navigateToProfile()">
+			<button type="button" class="sign-in-button" onclick="login()">
 				Sign in
 			</button>
 		</form>
@@ -56,12 +56,7 @@
 		</div>
 	</footer>
 
-	<script>
-		function navigateToProfile() {
-			// สั่งให้เบราว์เซอร์เปลี่ยนไปโหลดไฟล์ profile_logged_in.html
-			window.location.href = 'profile_logged_in.html';
-		}
-	</script>
+	<!-- Success Modal -->
 	<div id="successModal" class="modal-overlay">
 		<div class="modal-content">
 			<div class="modal-icon-success">
@@ -72,49 +67,33 @@
 		</div>
 	</div>
 
+	<!-- Failed Modal -->
 	<div id="failedModal" class="modal-overlay">
 		<div class="modal-content">
 			<div class="modal-icon-failed">
 				<i class="fas fa-times"></i>
 			</div>
-			<p class="modal-message">Logged in failed</p>
+			<p class="modal-message">Login failed</p>
 			<p class="modal-subtitle">Email / Student ID or password is incorrect</p>
 			<button class="modal-button" onclick="handleFailedContinue()">Continue</button>
 		</div>
 	</div>
 
-
 	<script>
 		const successModal = document.getElementById('successModal');
 		const failedModal = document.getElementById('failedModal');
 
-		// ฟังก์ชันที่ถูกเรียกเมื่อกดปุ่ม "Sign in"
-		function navigateToProfile() {
-			// *** ในการจำลองนี้ เราจะสุ่มผลลัพธ์: 70% Success, 30% Failed ***
-			const isSuccess = Math.random() < 0.7;
-
-			if (isSuccess) {
-				successModal.style.display = 'flex';
-			} else {
-				failedModal.style.display = 'flex';
-			}
-		}
-
-		// ฟังก์ชันที่ถูกเรียกเมื่อกด "Continue" ใน Popup SUCCESS
 		function handleSuccessContinue() {
-			// ซ่อน Modal
 			successModal.style.display = 'none';
-			// เปลี่ยนหน้าไปยัง Profile ที่เข้าสู่ระบบแล้ว
 			window.location.href = 'profile_logged_in.html';
 		}
 
-		// ฟังก์ชันที่ถูกเรียกเมื่อกด "Continue" ใน Popup FAILED
 		function handleFailedContinue() {
-			// ซ่อน Modal
 			failedModal.style.display = 'none';
-			// ผู้ใช้ยังคงอยู่ที่หน้า Login เดิม
 		}
 	</script>
-</body>
 
+	<!-- เชื่อมต่อกับไฟล์ login.js -->
+	<script src="login.js"></script>
+</body>
 </html>
