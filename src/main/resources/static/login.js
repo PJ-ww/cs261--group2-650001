@@ -12,7 +12,7 @@ async function login() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Application-Key": "3fd738c9438b232891c501db5791e9d086964324"
+        "Application-Key": "TU7ba945dfd7eab36cb292085fe2193cf101b2cb94388c2721d105e34eb6df0a7378f327eddfbee7820e251535fbb12593"
       },
       body: JSON.stringify({
         Username: studentId,
