@@ -1,0 +1,294 @@
+/* General Setup */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f7f7f7;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Color Variables */
+:root {
+    --primary-maroon: #801d1d; /* Dark Maroon/Red */
+    --light-pink: #e6a0a0; /* Light Pink for input fields */
+    --text-gold: #c7903f; /* Gold for "Profile" text */
+}
+
+/* --- Header Styling (ใช้ร่วมกัน) --- */
+.header {
+    background-color: var(--primary-maroon);
+    color: white;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.header-icon {
+    font-size: 24px;
+    color: white;
+    position: absolute;
+    left: 15px;
+}
+
+.header-title {
+    margin: 0;
+    flex-grow: 1;
+    text-align: center;
+    color: var(--text-gold);
+    font-size: 20px;
+}
+
+/* --- Main Content Layout & Avatar (ใช้ร่วมกัน) --- */
+.profile-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.avatar-container {
+    margin: 20px 0;
+}
+
+.avatar-circle {
+    width: 100px;
+    height: 100px;
+    background-color: var(--primary-maroon);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid #666;
+}
+
+.avatar-icon {
+    font-size: 60px;
+    color: white;
+}
+
+/* --- Footer Navigation (ใช้ร่วมกัน) --- */
+.footer-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: white;
+    border-top: 1px solid #ccc;
+    padding: 10px 0;
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #666;
+    font-size: 12px;
+}
+
+.nav-item i {
+    font-size: 20px;
+    margin-bottom: 2px;
+}
+
+.nav-item.active {
+    color: var(--primary-maroon);
+}
+
+/* ======================================= */
+/* --- Styles for UNLOGGED-IN (Login) State --- */
+/* ======================================= */
+
+.login-message {
+    color: var(--primary-maroon);
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 0px;
+}
+
+.function-message {
+    font-size: 14px;
+    color: #333;
+    margin-top: 5px;
+    margin-bottom: 30px;
+}
+
+.function-message .bold {
+    font-style: italic;
+}
+
+.login-form {
+    width: 90%;
+    max-width: 350px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.input-field {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: var(--light-pink);
+    color: var(--primary-maroon);
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+.sign-in-button {
+    width: 100%;
+    padding: 15px;
+    background-color: var(--primary-maroon);
+    color: white;
+    border: 2px solid #5a5a5a;
+    border-radius: 5px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.guest-link {
+    margin-top: 20px;
+    color: var(--primary-maroon);
+    text-decoration: underline;
+    font-size: 14px;
+}
+
+/* ======================================= */
+/* --- Styles for LOGGED-IN State --- */
+/* ======================================= */
+
+.username-text {
+    color: #333;
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.email-text {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 30px;
+}
+
+.logout-section {
+    width: 90%;
+    max-width: 400px;
+    margin-top: 20px;
+}
+
+.divider-line {
+    border-bottom: 1px solid var(--text-gold);
+    width: 100%;
+    margin: 0 auto 15px auto;
+}
+
+.logout-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--primary-maroon);
+    font-size: 18px;
+    padding: 10px 0;
+    font-weight: 500;
+}
+
+.logout-icon {
+    font-size: 22px;
+    margin-right: 15px;
+}
+
+/* ======================================= */
+/* --- Styles for Modal (Popup) --- */
+/* ======================================= */
+
+/* พื้นหลังสีดำจางๆ ที่คลุมทั้งจอ */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* สีเทาดำจางๆ */
+    display: none; /* ซ่อนไว้เป็นค่าเริ่มต้น */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* ให้อยู่ด้านบนสุดของทุกองค์ประกอบ */
+}
+
+/* กล่อง Modal สีขาว */
+.modal-content {
+    background-color: white;
+    padding: 30px 20px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 300px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* ไอคอน Success (ติ๊กถูก) */
+.modal-icon-success {
+    color: white;
+    font-size: 50px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: #4CAF50; /* สีเขียว */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 20px auto;
+}
+
+/* ไอคอน Failed (กากบาท) */
+.modal-icon-failed {
+    color: white;
+    font-size: 50px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: #CC3333; /* สีแดงเข้ม */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 20px auto;
+}
+
+/* ข้อความสถานะหลัก */
+.modal-message {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+/* ข้อความอธิบาย (สำหรับสถานะ Failed) */
+.modal-subtitle {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 20px;
+}
+
+/* ปุ่ม Continue ใน Modal */
+.modal-button {
+    padding: 10px 30px;
+    background-color: var(--primary-maroon); /* สีเดียวกับปุ่ม Sign In */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+}
