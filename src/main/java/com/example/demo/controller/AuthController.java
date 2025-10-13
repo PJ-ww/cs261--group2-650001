@@ -6,10 +6,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class AuthController {
 
-    // 🧭 ใช้แสดงหน้า login เท่านั้น
     @GetMapping("/login")
     public String loginPage() {
-        // จะไปหาไฟล์ login.html ใน /resources/templates/
-        return "login";
+        // ให้ forward ไปที่ไฟล์ login.html ที่อยู่ใน /static
+        return "forward:/login.html";
     }
 }
