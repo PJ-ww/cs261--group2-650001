@@ -8,12 +8,9 @@ async function login() {
   }
 
   try {
-    const response = await fetch("https://restapi.tu.ac.th/api/v1/auth/Ad/verify", {
+    const response = await fetch("/api/login", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Application-Key": "TU7ba945dfd7eab36cb292085fe2193cf101b2cb94388c2721d105e34eb6df0a7378f327eddfbee7820e251535fbb12593"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         Username: studentId,
         Password: citizenId
@@ -22,15 +19,24 @@ async function login() {
 
     const data = await response.json();
 
-    if (response.ok && data.status === true) {
+    if (data.status === true) {
       localStorage.setItem("tu_token", data.token || data.message);
       localStorage.setItem("student_info", JSON.stringify(data));
-      document.getElementById('successModal').style.display = 'flex';
+      document.getElementById("successModal").style.display = "flex";
     } else {
-      document.getElementById('failedModal').style.display = 'flex';
+      document.getElementById("failedModal").style.display = "flex";
     }
   } catch (error) {
     console.error("Error:", error);
-    alert("ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
+    alert("ไม่สามารถเชื่อมต่อกับระบบได้");
   }
+}
+
+function handleSuccessContinue() {
+  document.getElementById("successModal").style.display = "none";
+  window.location.href = "profile_logged_in.html"; // ✅ ชื่อไฟล์ตรงกับของคุณ
+}
+
+function handleFailedContinue() {
+  document.getElementById("failedModal").style.display = "none";
 }

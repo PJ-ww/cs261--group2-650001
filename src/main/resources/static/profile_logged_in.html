@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - Logged In</title>
+  <link rel="stylesheet" href="login_style.css">
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+  <div class="header">
+    <i class="fas fa-arrow-left header-icon" onclick="goBack()"></i>
+    <h1 class="header-title">Profile</h1>
+  </div>
+
+  <main class="profile-content">
+    <div class="avatar-container">
+      <div class="avatar-circle">
+        <i class="fas fa-user avatar-icon"></i>
+      </div>
+    </div>
+
+    <!-- ✅ แสดงข้อมูลผู้ใช้ -->
+    <div>
+      <p id="username" class="username-text">Loading...</p>
+      <p id="email" class="email-text"></p>
+    </div>
+
+    <!-- ✅ ปุ่ม Logout -->
+    <div class="logout-section">
+      <div class="divider-line"></div>
+      <a href="#" class="logout-link" onclick="logout()">
+        <i class="fas fa-arrow-right logout-icon"></i>
+        Logout
+      </a>
+    </div>
+  </main>
+
+  <footer class="footer-nav">
+    <div class="nav-item">
+      <i class="fas fa-home"></i>
+      <span class="nav-label">Home</span>
+    </div>
+    <div class="nav-item">
+      <i class="fas fa-bookmark"></i>
+      <span class="nav-label">Favorites</span>
+    </div>
+    <div class="nav-item active">
+      <i class="fas fa-user"></i>
+      <span class="nav-label">Profile</span>
+    </div>
+  </footer>
+
+  <script>
+    // ✅ โหลดข้อมูลผู้ใช้จาก localStorage
+    document.addEventListener("DOMContentLoaded", () => {
+      const userData = localStorage.getItem("student_info");
+      if (userData) {
+        const data = JSON.parse(userData);
+
+        // ขึ้นอยู่กับ TU API field ที่ส่งมา เช่น firstname_en, email, etc.
+        document.getElementById("username").textContent =
+          data.displayname_en || data.firstname_en + " " + data.lastname_en || "Unknown User";
+
+        document.getElementById("email").textContent =
+          data.email || (data.Username ? data.Username + "@dome.tu.ac.th" : "");
+      } else {
+        // ถ้าไม่มีข้อมูล -> กลับไปหน้า login
+        window.location.href = "login.html";
+      }
+    });
+
+    // ✅ ฟังก์ชัน Logout
+    function logout() {
+      localStorage.removeItem("tu_token");
+      localStorage.removeItem("student_info");
+      window.location.href = "login.html";
+    }
+
+    // ✅ ปุ่ม back (มุมซ้ายบน)
+    function goBack() {
+      window.history.back();
+    }
+  </script>
+</body>
+
+</html>

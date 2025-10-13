@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - Login</title>
+  <link rel="stylesheet" href="login_style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+  <div class="header">
+    <i class="fas fa-arrow-left header-icon"></i>
+    <h1 class="header-title">Profile</h1>
+  </div>
+
+  <main class="profile-content">
+    <div class="avatar-container">
+      <div class="avatar-circle">
+        <i class="fas fa-user avatar-icon"></i>
+      </div>
+    </div>
+
+    <p class="login-message">
+      Login to TU Compass with TU account
+    </p>
+    <p class="function-message">
+      for <span class="bold">more function!</span>
+    </p>
+
+    <!-- ✅ ใช้ onsubmit เรียก login() แทน action -->
+    <form class="login-form" onsubmit="event.preventDefault(); login();">
+      <input id="studentId" type="text" placeholder="Email / Student ID" class="input-field" required>
+      <input id="citizenId" type="password" placeholder="Password" class="input-field" required>
+
+      <button type="submit" class="sign-in-button">Sign in</button>
+    </form>
+
+    <a href="#" class="guest-link">Use for guest</a>
+  </main>
+
+  <footer class="footer-nav">
+    <div class="nav-item">
+      <i class="fas fa-home"></i>
+      <span class="nav-label">Home</span>
+    </div>
+    <div class="nav-item">
+      <i class="fas fa-bookmark"></i>
+      <span class="nav-label">Favorites</span>
+    </div>
+    <div class="nav-item active">
+      <i class="fas fa-user"></i>
+      <span class="nav-label">Profile</span>
+    </div>
+  </footer>
+
+  <!-- ✅ Modal success -->
+  <div id="successModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-icon-success">
+        <i class="fas fa-check"></i>
+      </div>
+      <p class="modal-message">Login Successful!</p>
+      <button class="modal-button" onclick="handleSuccessContinue()">Continue</button>
+    </div>
+  </div>
+
+  <!-- ✅ Modal failed -->
+  <div id="failedModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-icon-failed">
+        <i class="fas fa-times"></i>
+      </div>
+      <p class="modal-message">Login Failed</p>
+      <p class="modal-subtitle">Please check your Student ID or Password</p>
+      <button class="modal-button" onclick="handleFailedContinue()">Try again</button>
+    </div>
+  </div>
+
+  <!-- ✅ เรียก JS -->
+  <script src="login.js"></script>
+</body>
+</html>
