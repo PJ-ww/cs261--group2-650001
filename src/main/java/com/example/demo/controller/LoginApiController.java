@@ -1,48 +1,53 @@
 package com.example.demo.controller;
 
+import com.example.demo.service.TuAuthService;
+import com.example.demo.model.User;
+import com.example.demo.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
-import java.util.*;
+
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
 public class LoginApiController {
 
+    @Autowired
+    private TuAuthService tuAuthService;
+
+    @Autowired
+    private UserRepository userRepository;
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
-        String username = credentials.get("Username");
-        String password = credentials.get("Password");
+        String studentId = credentials.get("Username");  // ✅ TU API still sends "Username"
+        String citizenId = credentials.get("Password");
 
-        String tuApiUrl = "https://restapi.tu.ac.th/api/v1/auth/Ad/verify";
-        RestTemplate restTemplate = new RestTemplate();
+        // ✅ Use TU API for authentication
+        boolean success = tuAuthService.authenticateAndLogin(studentId, citizenId);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Application-Key",
-                "TU7ba945dfd7eab36cb292085fe2193cf101b2cb94388c2721d105e34eb6df0a7378f327eddfbee7820e251535fbb12593");
+        if (success) {
+            // ✅ Retrieve the user created or updated by TuAuthService
+            Optional<User> userOpt = userRepository.findByStudentId(studentId);
+            User user = userOpt.orElse(null);
 
-        Map<String, String> body = new HashMap<>();
-        body.put("UserName", username);
-        body.put("PassWord", password); 
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("status", false, "message", "User not found after login"));
+            }
 
-        HttpEntity<Map<String, String>> entity = new HttpEntity<>(body, headers);
-
-        try {
-            ResponseEntity<Map> response = restTemplate.exchange(
-                    tuApiUrl,
-                    HttpMethod.POST,
-                    entity,
-                    Map.class
-            );
-
-            System.out.println("TU API response: " + response.getBody()); // ✅ debug log
-
-            return ResponseEntity.ok(response.getBody());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                    .body(Map.of("status", false, "message", "Login failed or TU API error"));
+            // ✅ Send a clean JSON response to frontend
+            return ResponseEntity.ok(Map.of(
+                "status", true,
+                "message", "Login successful",
+                "studentId", user.getStudentId(),
+                "role", user.getRole().name()
+            ));
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("status", false, "message", "Invalid username or password"));
         }
     }
 }

@@ -11,8 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Optional;
 import java.util.Map;
+import java.util.Optional;
+import java.util.List;
 
 @Service
 public class TuAuthService {
@@ -26,8 +27,9 @@ public class TuAuthService {
     @Value("${tu.api.application-key}")
     private String applicationKey;
 
-    private final String TU_VERIFY_API_URL = "https://restapi.tu.ac.th/api/v1/auth/Ad/verify";
+    private static final String TU_VERIFY_API_URL = "https://restapi.tu.ac.th/api/v1/auth/Ad/verify";
 
+    // ✅ ใช้ username (Student ID) และ password ในการตรวจสอบ
     public boolean authenticateAndLogin(String username, String password) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -47,37 +49,36 @@ public class TuAuthService {
                 return true;
             }
         } catch (HttpClientErrorException e) {
-            System.err.println("!!!!!!!!!! TU API ERROR !!!!!!!!!");
-            System.err.println("STATUS CODE: " + e.getStatusCode());
-            System.err.println("RESPONSE BODY: " + e.getResponseBodyAsString());
-            System.err.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            System.err.println("TU Auth failed: " + e.getStatusCode());
             return false;
         }
+
         return false;
     }
 
-    private void createSpringSecuritySession(String email) {
-        Optional<User> userOptional = userRepository.findByEmail(email);
-        User user;
+    // ✅ สร้าง session ใน Spring Security
+    private void createSpringSecuritySession(String studentIdOrEmail) {
+        // 🔧 แก้จาก username → studentIdOrEmail
+    	Optional<User> userOptional = userRepository.findByStudentId(studentIdOrEmail);
+        User user = userOptional.orElseGet(() -> {
+            User newUser = new User();
+            newUser.setStudentId(studentIdOrEmail);
+            // 🔥 assign role อัตโนมัติ ถ้าเป็น admin id ที่ระบุ
+            newUser.setRole(isAdminStudent(studentIdOrEmail)
+                    ? User.Role.ROLE_ADMIN
+                    : User.Role.ROLE_USER);
+            return userRepository.save(newUser);
+        });
 
-        if (userOptional.isPresent()) {
-            user = userOptional.get();
-        } else {
-            user = new User();
-            user.setEmail(email);
-            user.setName(email);
-            user.setRole(User.Role.ROLE_USER);
-            user.setPassword("DUMMY_PASSWORD_FOR_TU_USER");
-            user.setUsername(email);
-            userRepository.save(user);
-        }
-
-        // --- แก้ไขการสร้าง authToken ตรงนี้ ---
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-            user, // Principal (ตอนนี้เป็น UserDetails แล้ว)
-            null, // Credentials
-            user.getAuthorities() // ดึง Authorities จากเมธอด getAuthorities() โดยตรง
-        );
+        // ✅ สร้าง token และตั้งค่าลงใน context
+        UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authToken);
+    }
+
+    // ✅ ระบุ student id ที่จะเป็น admin
+    private boolean isAdminStudent(String studentId) {
+        List<String> adminList = List.of("6709650631");
+        return adminList.contains(studentId);
     }
 }

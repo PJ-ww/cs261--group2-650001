@@ -56,22 +56,31 @@
 
   <script>
     // ✅ โหลดข้อมูลผู้ใช้จาก localStorage
-    document.addEventListener("DOMContentLoaded", () => {
-      const userData = localStorage.getItem("student_info");
-      if (userData) {
-        const data = JSON.parse(userData);
+	document.addEventListener("DOMContentLoaded", () => {
+	  const userData = localStorage.getItem("student_info");
 
-        // ขึ้นอยู่กับ TU API field ที่ส่งมา เช่น firstname_en, email, etc.
-        document.getElementById("username").textContent =
-          data.displayname_en || data.firstname_en + " " + data.lastname_en || "Unknown User";
+	  if (userData) {
+	    const parsed = JSON.parse(userData);
+	    // ✅ ถ้ามี field data ข้างใน (แบบจาก TU API)
+	    const data = parsed.data ? parsed.data : parsed;
 
-        document.getElementById("email").textContent =
-          data.email || (data.Username ? data.Username + "@dome.tu.ac.th" : "");
-      } else {
-        // ถ้าไม่มีข้อมูล -> กลับไปหน้า login
-        window.location.href = "login.html";
-      }
-    });
+	    // ✅ ชื่อผู้ใช้ (แสดงชื่อเต็มภาษาอังกฤษ ถ้าไม่มีใช้ userName)
+	    document.getElementById("username").textContent =
+	      data.displayname_en ||
+	      data.displayname_th ||
+	      data.userName ||
+	      "Unknown User";
+
+	    // ✅ อีเมล (ถ้าไม่มี ใช้ userName@dome.tu.ac.th)
+	    document.getElementById("email").textContent =
+	      data.email ||
+	      (data.userName ? data.userName + "@dome.tu.ac.th" : "");
+
+	  } else {
+	    // ❌ ถ้าไม่มีข้อมูลใน localStorage → กลับไปหน้า login
+	    window.location.href = "login.html";
+	  }
+	});
 
     // ✅ ฟังก์ชัน Logout
     function logout() {
