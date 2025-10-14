@@ -40,15 +40,15 @@
   </main>
 
   <footer class="footer-nav">
-    <div class="nav-item">
+    <div class="nav-item" id="homeButton">
       <i class="fas fa-home"></i>
       <span class="nav-label">Home</span>
     </div>
-    <div class="nav-item">
+    <div class="nav-item" id="favoriteButton">
       <i class="fas fa-bookmark"></i>
       <span class="nav-label">Favorites</span>
     </div>
-    <div class="nav-item active">
+    <div class="nav-item active"id="profileButton">
       <i class="fas fa-user"></i>
       <span class="nav-label">Profile</span>
     </div>
@@ -85,6 +85,28 @@
       window.history.back();
     }
   </script>
+  <script>
+    // 🏠 ปุ่ม Home
+    document.getElementById("homeButton").addEventListener("click", () => {
+      window.location.href = "map.html";
+    });
+
+    // ⭐ ปุ่ม Favorites 
+   // document.getElementById("favoriteButton").addEventListener("click", () => {
+     // window.location.href = "favorites.html"; 
+   // });
+
+    // 👤 ปุ่ม Profile
+    document.getElementById("profileButton").addEventListener("click", () => {
+      const token = localStorage.getItem("tu_token");
+      if (token) {
+        window.location.href = "profile_logged_in.html";
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+  </script>
+  <script src="/footer.js"></script>
 </body>
 
 </html>
