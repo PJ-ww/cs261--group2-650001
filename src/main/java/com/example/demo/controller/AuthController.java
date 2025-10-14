@@ -11,4 +11,5 @@ public class AuthController {
         // ให้ forward ไปที่ไฟล์ login.html ที่อยู่ใน /static
         return "forward:/login.html";
     }
+    
 }
