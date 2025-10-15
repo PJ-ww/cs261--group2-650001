@@ -14,6 +14,11 @@ public class Place {
 	@NotBlank(message = "ชื่อสถานที่ห้ามว่าง")
     @Column(nullable = false)
     private String name;
+	//เอาไว้เก็บข้อมูลให้ตรง dataseeder *kim
+	private String openTime;
+    private String closeTime;
+    private String tags;
+    private String imageUrl;
 
     private String description;
     
@@ -24,13 +29,26 @@ public class Place {
     private Double longitude;
 
     public Place() {}
+	public Place(Long id, String name, String description, 
+              String openTime, String closeTime, String tags, 
+              Double latitude, Double longitude, String imageUrl) {
+    this.id = id;
+    this.name = name;
+    this.description = description;
+    this.latitude = latitude;
+    this.longitude = longitude;
+    // *kim
+}
 
-    public Place(String name, String description, Double latitude, Double longitude) {
+    public Place(String name, String description, Double latitude, Double longitude ) {
         this.name = name;
         this.description = description;
         this.latitude = latitude;
         this.longitude = longitude;
+		
     }
+
+	
 
     // --- Getter / Setter ---
 	public Long getId() {
@@ -63,4 +81,9 @@ public class Place {
 	public void setLongitude(Double longitude) {
 		this.longitude = longitude;
 	}
+
+	    // จะสร้างคอลัมน์ category_id ในตาราง places *kim
+	@ManyToOne
+    @JoinColumn(name = "category_id") 
+    private Category category;
 }
