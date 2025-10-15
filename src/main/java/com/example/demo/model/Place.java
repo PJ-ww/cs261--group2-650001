@@ -29,24 +29,21 @@ public class Place {
     private Double longitude;
 
     public Place() {}
-	public Place(Long id, String name, String description, 
-              String openTime, String closeTime, String tags, 
-              Double latitude, Double longitude, String imageUrl) {
-    this.id = id;
-    this.name = name;
-    this.description = description;
-    this.latitude = latitude;
-    this.longitude = longitude;
-    // *kim
+    public Place(Long id, String name, String description,
+            String openTime, String closeTime, String tags,
+            Double latitude, Double longitude, String imageUrl,
+            Category category) {
+   this.id = id;
+   this.name = name;
+   this.description = description;
+   this.openTime = openTime;
+   this.closeTime = closeTime;
+   this.tags = tags;
+   this.latitude = latitude;
+   this.longitude = longitude;
+   this.imageUrl = imageUrl;
+   this.category = category;
 }
-
-    public Place(String name, String description, Double latitude, Double longitude ) {
-        this.name = name;
-        this.description = description;
-        this.latitude = latitude;
-        this.longitude = longitude;
-		
-    }
 
 	
 
@@ -80,6 +77,41 @@ public class Place {
 	}
 	public void setLongitude(Double longitude) {
 		this.longitude = longitude;
+	}
+	
+	public String getOpenTime() { 
+		return openTime; 
+	}
+	public void setOpenTime(String openTime) { 
+		this.openTime = openTime; 
+	}
+
+	public String getCloseTime() { 
+		return closeTime; 
+	}
+	public void setCloseTime(String closeTime) { 
+		this.closeTime = closeTime; 
+	}
+
+	public String getTags() { 
+		return tags; 
+	}
+	public void setTags(String tags) { 
+		this.tags = tags; 
+	}
+
+	public String getImageUrl() { 
+		return imageUrl; 
+	}
+	public void setImageUrl(String imageUrl) { 
+		this.imageUrl = imageUrl; 
+	}
+
+	public Category getCategory() { 
+		return category; 
+	}
+	public void setCategory(Category category) { 
+		this.category = category; 
 	}
 
 	    // จะสร้างคอลัมน์ category_id ในตาราง places *kim
