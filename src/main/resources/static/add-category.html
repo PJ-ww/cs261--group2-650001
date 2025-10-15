@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add/Edit Category</title>
+    <link rel="stylesheet" href="add-style.css"> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+    <div class="form-page-container" style="max-width: 800px;">
+        <header>
+            <a href="category.html" class="back-button"><i class="fas fa-chevron-left"></i></a>
+            <span id="page-title">Add Category</span>
+        </header>
+        <main>
+            <h2 id="form-title">เพิ่มหมวดหมู่</h2>
+            <form id="categoryForm">
+                <div class="form-group">
+                    <label for="category-name">ชื่อหมวดหมู่</label>
+                    <input type="text" id="category-name" placeholder="เช่น อาคารเรียน, ร้านอาหาร" required>
+                </div>
+                <div class="form-group">
+                    <label for="category-description">รายละเอียด</label>
+                    <textarea id="category-description" rows="4" placeholder="คำอธิบายสั้นๆ เกี่ยวกับหมวดหมู่นี้"></textarea>
+                </div>
+                <div class="button-group" style="justify-content: flex-end; padding-top: 20px;">
+                    <button type="button" class="btn btn-cancel" onclick="window.location.href='category.html'">ยกเลิก</button>
+                    <button type="submit" class="btn btn-save">บันทึก</button>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <footer>
+        <a href="map.html" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="dashboard.html" class="nav-item active">
+            <i class="fas fa-cog"></i>
+            <span>Admin Dashboard</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </footer>
+    <script src="add-category-script.js"></script>
+</body>
+</html>
