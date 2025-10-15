@@ -17,4 +17,26 @@ public class Category {
     private Long id;
 
     private String name; // e.g., "อาหารและเครื่องดื่ม", "คณะและอาคารเรียน"
+    private String category;
+
+    // ✅ constructor ที่คุณเรียกใช้ใน seeder
+    public Category(Long id, String category) {
+        this.id = id;
+        this.setCategory(category);
+    }
+
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
 }

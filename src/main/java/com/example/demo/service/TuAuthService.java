@@ -78,7 +78,17 @@ public class TuAuthService {
 
     // ✅ ระบุ student id ที่จะเป็น admin
     private boolean isAdminStudent(String studentId) {
-        List<String> adminList = List.of("6709650631","6709650664"," 6709650532","6709650029","6709650565","6709650375","6709650193","6709650367");
+        List<String> adminList = List.of(
+            "6709650631",
+            "6709650664",
+            "6709650532",
+            "6709650029",
+            "6709650565",
+            "6709650375",
+            "6709650193",
+            "6709650367"
+        );
         return adminList.contains(studentId);
     }
+
 }
