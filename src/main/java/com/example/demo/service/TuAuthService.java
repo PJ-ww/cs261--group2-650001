@@ -8,18 +8,13 @@ import org.springframework.http.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.List;
 
 @Service
 public class TuAuthService {
-
-    @Autowired
-    private RestTemplate restTemplate;
 
     @Autowired
     private UserRepository userRepository;
@@ -29,66 +24,55 @@ public class TuAuthService {
 
     private static final String TU_VERIFY_API_URL = "https://restapi.tu.ac.th/api/v1/auth/Ad/verify";
 
-    // ✅ ใช้ username (Student ID) และ password ในการตรวจสอบ
     public boolean authenticateAndLogin(String username, String password) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Application-Key", applicationKey);
-
-        Map<String, String> body = Map.of(
-            "UserName", username,
-            "PassWord", password
-        );
-
-        HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(body, headers);
-
         try {
-            ResponseEntity<String> response = restTemplate.postForEntity(TU_VERIFY_API_URL, requestEntity, String.class);
-            if (response.getStatusCode() == HttpStatus.OK) {
-                createSpringSecuritySession(username);
+            RestTemplate restTemplate = new RestTemplate();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Application-Key", applicationKey);
+
+            Map<String, String> body = Map.of("UserName", username, "PassWord", password);
+            HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
+
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    TU_VERIFY_API_URL,
+                    HttpMethod.POST,
+                    request,
+                    Map.class
+            );
+
+            if (response.getStatusCode() == HttpStatus.OK &&
+                    Boolean.TRUE.equals(response.getBody().get("status"))) {
+
+                Optional<User> userOptional = userRepository.findByStudentId(username);
+                User user = userOptional.orElseGet(() -> {
+                    User newUser = new User();
+                    newUser.setStudentId(username);
+                    newUser.setRole(isAdminStudent(username)
+                            ? User.Role.ROLE_ADMIN
+                            : User.Role.ROLE_USER);
+                    return userRepository.save(newUser);
+                });
+
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+
                 return true;
             }
-        } catch (HttpClientErrorException e) {
-            System.err.println("TU Auth failed: " + e.getStatusCode());
-            return false;
+        } catch (Exception e) {
+            System.err.println("❌ TU API error: " + e.getMessage());
         }
-
         return false;
     }
 
-    // ✅ สร้าง session ใน Spring Security
-    private void createSpringSecuritySession(String studentIdOrEmail) {
-        // 🔧 แก้จาก username → studentIdOrEmail
-    	Optional<User> userOptional = userRepository.findByStudentId(studentIdOrEmail);
-        User user = userOptional.orElseGet(() -> {
-            User newUser = new User();
-            newUser.setStudentId(studentIdOrEmail);
-            // 🔥 assign role อัตโนมัติ ถ้าเป็น admin id ที่ระบุ
-            newUser.setRole(isAdminStudent(studentIdOrEmail)
-                    ? User.Role.ROLE_ADMIN
-                    : User.Role.ROLE_USER);
-            return userRepository.save(newUser);
-        });
-
-        // ✅ สร้าง token และตั้งค่าลงใน context
-        UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-    }
-
-    // ✅ ระบุ student id ที่จะเป็น admin
     private boolean isAdminStudent(String studentId) {
         List<String> adminList = List.of(
-            "6709650631",
-            "6709650664",
-            "6709650532",
-            "6709650029",
-            "6709650565",
-            "6709650375",
-            "6709650193",
-            "6709650367"
+            "6709650631", "6709650664", "6709650532",
+            "6709650029", "6709650565", "6709650375",
+            "6709650193", "6709650367"
         );
         return adminList.contains(studentId);
     }
-
 }

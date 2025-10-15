@@ -46,12 +46,39 @@
     </div>
 
     <footer>
-        <a href="map.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
-        <a href="category.html" class="nav-item"><i class="fas fa-cog"></i><span>Change Category</span></a>
-        <a href="#" class="nav-item"><i class="fas fa-user"></i><span>Profile</span></a>
+		<a href="/map.html" class="nav-item">
+		  <i class="fas fa-home"></i><span>Home</span>
+		</a>
+		<a href="/admin/category.html" class="nav-item">
+		  <i class="fas fa-cog"></i><span>Change Category</span>
+		</a>
+		<a href="/profile_logged_in.html" class="nav-item">
+		  <i class="fas fa-user"></i><span>Profile</span>
+		</a>
     </footer>
 
     <script src="dashboard-script.js"></script>
+	
+	<script type="module">
+	  import { protectPage } from "/authGuard.js";
+
+	  // 🧩 บังคับเฉพาะ admin
+	  protectPage(true);
+
+	  window.addEventListener("beforeunload", (event) => {
+	    const nextUrl = document.activeElement?.href || "";
+	    
+	    // ถ้า URL ถัดไปไม่ใช่ /admin/... หรือว่าง (เช่น ปิดแท็บ)
+	    if (!nextUrl.includes("/admin/")) {
+	      console.log("🧹 Leaving admin area → clearing auth info...");
+	      localStorage.removeItem("role");
+	      localStorage.removeItem("tu_token");
+	      localStorage.removeItem("student_info");
+	    } else {
+	      console.log("🔒 Still inside admin area, keep session.");
+	    }
+	  });
+	</script>
 
 </body>
 </html>
