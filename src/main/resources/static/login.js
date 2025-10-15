@@ -8,7 +8,7 @@ async function login() {
   }
 
   try {
-    // 🔹 1. ล็อกอินผ่าน TU Verify API ผ่าน backend ของเรา
+    // 🔹 เรียก backend login (ซึ่งจะยิงไป TU API)
     const response = await fetch("/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -21,7 +21,7 @@ async function login() {
     const data = await response.json();
 
     if (data.status === true) {
-      // ✅ 2. เรียก TU Profile API v2 เพื่อดึงข้อมูลโปรไฟล์เต็ม
+      // ✅ ดึงข้อมูลโปรไฟล์จาก TU API (optional)
       const profileResponse = await fetch(
         `https://restapi.tu.ac.th/api/v2/profile/std/info?id=${studentId}`,
         {
@@ -31,31 +31,24 @@ async function login() {
           }
         }
       );
-
       const profileData = await profileResponse.json();
 
-      // ✅ 3. เก็บข้อมูลทั้งหมดใน localStorage
-      localStorage.setItem("tu_token", data.token || data.message);
+      // ✅ เก็บข้อมูลใน localStorage
+      localStorage.setItem("tu_token", data.message);
       localStorage.setItem("student_info", JSON.stringify(profileData));
+      localStorage.setItem("role", data.role);
 
-      // ✅ 4. แสดง modal สำเร็จ
-      document.getElementById("successModal").style.display = "flex";
+      // ✅ แสดง modal หรือ redirect ตาม role
+      if (data.role === "ROLE_ADMIN") {
+        window.location.href = "/admin/dashboard.html";
+      } else {
+        window.location.href = "/profile_logged_in.html";
+      }
     } else {
-      document.getElementById("failedModal").style.display = "flex";
+      alert("รหัสนักศึกษาหรือรหัสประชาชนไม่ถูกต้อง");
     }
   } catch (error) {
     console.error("Error:", error);
     alert("ไม่สามารถเชื่อมต่อกับระบบได้");
   }
-}
-
-// ✅ กด Continue หลัง Login สำเร็จ → ไปหน้าโปรไฟล์
-function handleSuccessContinue() {
-  document.getElementById("successModal").style.display = "none";
-  window.location.href = "profile_logged_in.html";
-}
-
-// ❌ ปุ่มปิด modal ถ้า login fail
-function handleFailedContinue() {
-  document.getElementById("failedModal").style.display = "none";
 }

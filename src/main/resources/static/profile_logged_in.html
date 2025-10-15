@@ -84,8 +84,7 @@
 
     // ✅ ฟังก์ชัน Logout
     function logout() {
-      localStorage.removeItem("tu_token");
-      localStorage.removeItem("student_info");
+      localStorage.clear();
       window.location.href = "login.html";
     }
 
