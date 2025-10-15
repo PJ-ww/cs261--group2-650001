@@ -1,0 +1,369 @@
+/* --- Global Styles --- */
+body, html {
+    margin: 0; 
+    padding: 0; 
+    height: 100%; 
+    width: 100%;
+    font-family: 'Kanit', sans-serif; 
+    background-color: #f5f5f5; /* สีพื้นหลังหลักของเว็บไซต์ */
+}
+
+.page-container {
+    max-width: 1200px; 
+    margin: 30px auto; /* เพิ่ม Margin บน-ล่าง ให้ดูเหมือนกล่องบน Desktop */
+    background-color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* เงาสำหรับ Desktop */
+    border-radius: 8px;
+    min-height: auto;
+}
+
+/* ---------------------------------------------------- */
+/* --- 1. Desktop-First (Default: 2 Columns Layout) --- */
+/* ---------------------------------------------------- */
+
+.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background-color: #8B0000; 
+    color: white;
+    padding: 15px 0;
+    font-size: 1.2rem; 
+    font-weight: bold; 
+    z-index: 10;
+}
+
+.back-link {
+    font-size: 24px;
+    color: white;
+    position: absolute;
+    left: 15px;
+}
+
+.header-icon {
+    font-size: 1.4rem;
+}
+
+.detail-wrapper {
+    /* โครงสร้างหลัก: Flexbox 2 คอลัมน์ */
+    display: flex; 
+    gap: 40px; 
+    padding: 30px;
+    text-align: left;
+}
+
+/* Left Column: Media (รูปภาพ) */
+.media-column {
+    flex: 1.5; /* กำหนดให้รูปภาพกว้างกว่าเล็กน้อย */
+    padding: 0;
+}
+
+.image-placeholder {
+    width: 100%;
+    padding-top: 65%; /* อัตราส่วน 16:10 หรือใกล้เคียง */
+    height: auto;
+    background-color: #D3CACA; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+    position: relative;
+}
+
+.placeholder-icon {
+    font-size: 80px; /* ไอคอนใหญ่ขึ้นบน Desktop */
+    color: #A9A9A9;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Right Column: Info (รายละเอียด) */
+.info-column {
+    flex: 2; /* กำหนดให้รายละเอียดกว้างกว่า */
+    padding: 0;
+}
+
+/* ชื่อและหมุด */
+.title-block {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.item-name {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    color: #333;
+    margin-right: 15px;
+}
+
+.location-pin-icon {
+    font-size: 28px;
+    color: #E24C4B; 
+    margin-right: 15px;
+}
+
+.bookmark-icon {
+    /* บน Desktop วางไว้ด้านขวาของชื่อ */
+    position: static; 
+    font-size: 28px;
+    color: #923C37; 
+    margin-left: auto; /* ดันไปขวาสุด */
+    cursor: pointer;
+}
+
+.info-separator {
+    border: none;
+    border-top: 1px solid #eee; /* เส้นคั่นบางๆ */
+    margin: 20px 0;
+    width: 100%;
+}
+
+/* สถานะความหนาแน่น */
+.density-status {
+    text-align: left;
+    margin-bottom: 25px;
+}
+.density-level-box {
+    display: inline-block;
+    padding: 8px 15px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 1rem;
+    margin-top: 10px;
+}
+.density-level-box.high { background-color: #fcebeb; color: #E24C4B; border: 1px solid #E24C4B; }
+.density-level-box.medium { background-color: #fff8e1; color: #FFD700; border: 1px solid #FFD700; }
+.density-level-box.low { background-color: #e8f5e9; color: #4CAF50; border: 1px solid #4CAF50; }
+
+
+/* รายละเอียด/คำอธิบาย */
+.description-block {
+    text-align: left;
+    margin-top: 30px;
+}
+
+.description-block h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #333;
+    border-bottom: 2px solid #FFD700;
+    padding-bottom: 5px;
+    display: inline-block;
+    margin-top: 25px;
+    margin-bottom: 15px;
+}
+
+.schedule-detail p {
+    margin: 10px 0;
+    font-size: 1rem;
+    color: #555;
+    display: flex;
+    justify-content: flex-start; /* จัดเรียงไปด้านซ้าย */
+    gap: 10px;
+}
+
+.schedule-detail .time-slot {
+    font-weight: bold;
+    color: #333;
+}
+.schedule-detail .time-slot.closed {
+    color: #E24C4B;
+}
+
+.full-description-text {
+    line-height: 1.6;
+    color: #444;
+    font-size: 0.95rem;
+    text-align: justify;
+}
+
+/* ปุ่ม CTA */
+.cta-button {
+    background-color: #923C37;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    width: auto;
+    margin-top: 30px;
+    transition: background-color 0.3s;
+}
+
+/* --- เพิ่ม/แก้ไขในส่วนของ Media Column --- */
+
+/* New: General container for the image/placeholder */
+.main-image {
+    position: relative;
+    width: 100%;
+    /* Desktop Default: Aspect Ratio (e.g., 16:10) */
+    padding-top: 65%; 
+    background-color: #D3CACA; /* สีพื้นหลังเมื่อไม่มีรูป */
+    border-radius: 5px;
+    overflow: hidden; 
+}
+
+/* Style สำหรับ Image Tag ที่จะแสดง */
+.location-image-display {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* สำคัญ: ทำให้รูปภาพครอบคลุมพื้นที่โดยไม่เสียสัดส่วน */
+    /* display: none; ถูกควบคุมโดย JS */
+}
+
+/* Placeholder icon */
+.placeholder-icon {
+    /* ใช้ตำแหน่งสัมบูรณ์ให้อยู่ตรงกลางของ .main-image */
+    font-size: 80px; 
+    color: #A9A9A9;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+/* ---------------------------------------------------- */
+/* --- 2. Responsive (Max-width: 767px) ---             */
+/* ---------------------------------------------------- */
+@media (max-width: 767px) {
+    
+    .page-container {
+        margin: 0 auto;
+        border-radius: 0;
+        box-shadow: none; /* ลบเงาบน Mobile */
+        min-height: 100vh;
+    }
+
+    /* แสดง Header Mobile */
+    .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background-color: #8B0000; 
+    color: white;
+    text-align: center; 
+    padding: 15px 0;
+    font-size: 1.2rem; 
+    font-weight: bold; 
+    z-index: 10;
+    }
+
+    .back-link {
+    font-size: 24px;
+    color: white;
+    position: absolute;
+    left: 15px;
+    }
+
+    .header-icon {
+        font-size: 1.4rem;
+    }
+
+    .main-image {
+        height: 200px; /* Mobile: Fixed height */
+        padding-top: 0;
+    }
+    
+    .placeholder-icon {
+        font-size: 48px;
+    }
+    
+    /* เปลี่ยนจาก 2 คอลัมน์เป็น 1 คอลัมน์ */
+    .detail-wrapper {
+        display: block; 
+        padding: 0 0 40px 0; 
+    }
+    
+    /* Padding ของคอลัมน์รูปภาพ */
+    .media-column {
+        padding: 20px 20px 0 20px;
+    }
+
+    .image-placeholder {
+        height: 200px; 
+        padding-top: 0;
+    }
+    
+    .placeholder-icon {
+        font-size: 48px;
+    }
+    
+    /* Padding และการจัดกึ่งกลางของคอลัมน์รายละเอียด */
+    .info-column {
+        padding: 20px;
+        text-align: center;
+    }
+    
+    /* ชื่อและหมุดบน Mobile */
+    .title-block {
+        flex-direction: column; 
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .item-name {
+        font-size: 1.5rem;
+        margin-right: 0;
+    }
+    
+    .location-pin-icon {
+        margin-top: 10px;
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .bookmark-icon {
+        /* วางไว้มุมบนขวาตามรูป Mobile */
+        position: absolute; 
+        top: 20px;
+        right: 20px;
+        font-size: 24px;
+    }
+    
+    .info-separator {
+        width: 80%;
+        border-top: 3px solid #FFD700;
+        margin: 25px auto;
+    }
+    
+    .density-status {
+        text-align: center;
+    }
+
+    /* รายละเอียด/คำอธิบาย */
+    .description-block {
+        text-align: center;
+    }
+
+    .schedule-detail p {
+        justify-content: space-between; /* จัดให้ข้อความอยู่ซ้าย ค่าอยู่ขวา */
+        width: 100%;
+        max-width: 350px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .full-description-text {
+        text-align: justify;
+        padding: 0 10px;
+    }
+    
+    .cta-button {
+        width: 90%;
+        max-width: 300px;
+    }
+}
