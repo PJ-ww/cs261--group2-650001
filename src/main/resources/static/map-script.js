@@ -263,6 +263,7 @@ function setupMapControls() {
  * ค้นหารายละเอียดสถานที่จาก Mock Data และแสดงผลบนแผนที่ (Task 3.5 และ U4)
  * @param {string} searchTerm - ชื่อสถานที่ย่อ (shortName) ที่ใช้ค้นหา
  */
+/*
 async function fetchAndDisplayDetails(searchTerm) {
     console.log("Detail request initiated for:", searchTerm);
     
@@ -314,25 +315,48 @@ async function fetchAndDisplayDetails(searchTerm) {
     google.maps.event.addListener(infoWindow, 'closeclick', function() {
         tempMarker.setMap(null); 
     });
-}
+}*/
 
 
 // เชิ่อมกับbackend
-/*
 async function fetchAndDisplayDetails(searchTerm) {
     console.log("Detail request initiated for:", searchTerm);
     
     try {
-        // 1. Fetch Data: ดึงข้อมูลสถานที่จาก Backend (สมมติว่า API ตอบกลับด้วย Object สถานที่เดียว)
-        const response = await fetch(`http://localhost:8080/api/details?search=${searchTerm}`);
+        // 1. Fetch Data: เปลี่ยนไปเรียก Endpoint ที่มีอยู่: /api/locations
+        //    และเนื่องจาก Backend ส่ง List กลับมา (แม้จะค้นหาแค่ 1 รายการ)
+        const response = await fetch(`http://localhost:8080/api/locations?search=${searchTerm}`); 
+        
         if (!response.ok) {
+            // ยังคงจัดการ Error เหมือนเดิม
             alert(`ไม่พบสถานที่ '${searchTerm}' ในระบบของเรา`);
             return;
         }
         
-        const locationDetails = await response.json();
+        // รับค่ากลับมาเป็น List (Array) ของสถานที่
+        const locationList = await response.json(); 
         
-        // ตรวจสอบว่ามีข้อมูล Lat/Lng ครบถ้วน
+        // **[จุดที่ 1]** ตรวจสอบว่ามีสถานที่อยู่ใน List หรือไม่
+        if (locationList.length === 0) {
+            alert(`ไม่พบสถานที่ '${searchTerm}' ในระบบของเรา`);
+            return;
+        }
+
+        // **[จุดที่ 2]** เลือกรายการแรกมาใช้งาน
+        const locationDetails = locationList[0]; 
+        
+        // **[จุดที่ 3]** ต้องแก้ไขการเข้าถึง Field ที่ไม่มีใน Model Backend
+        
+        // 1. สร้าง workingHours จาก openTime และ closeTime ที่มีใน Model
+        const workingHours = (locationDetails.openTime && locationDetails.closeTime)
+            ? `${locationDetails.openTime} - ${locationDetails.closeTime}`
+            : 'N/A';
+            
+        // 2. shortName: Model เดิมของคุณไม่มี shortName
+        //    *ถ้า Backend ค้นหาด้วย name, เราจะใช้ name เป็น shortName ชั่วคราว*
+        const shortName = locationDetails.name; // <--- *อาจต้องปรับตามการทำงานจริงของ Backend*
+
+        // ตรวจสอบว่ามีข้อมูล Lat/Lng ครบถ้วน (เหมือนเดิม)
         if (!locationDetails.latitude || !locationDetails.longitude) {
             console.error("ข้อมูลสถานที่ไม่มีพิกัด Lat/Lng ที่ถูกต้อง");
             return;
@@ -343,27 +367,24 @@ async function fetchAndDisplayDetails(searchTerm) {
             lng: locationDetails.longitude 
         };
 
-        // 2. Move Map: ขยับแผนที่และซูมไปยังตำแหน่งที่ค้นพบ
+        // 2. Move Map: ขยับแผนที่และซูมไปยังตำแหน่งที่ค้นพบ (เหมือนเดิม)
         map.setCenter(position);
         map.setZoom(17); 
         
-        // *หมายเหตุ: ถ้าต้องการให้มี Marker ชั่วคราวปรากฏที่ตำแหน่งที่ค้นหา ให้สร้าง Marker ใหม่ที่นี่*
-        
-        // 3. Display Popup: แสดงข้อมูลเบื้องต้นใน Infowindow (Popup) ทันที
+        // 3. Display Popup: สร้าง Content ใหม่โดยใช้ Field ที่แก้ไขแล้ว
         
         const content = `
-            <div class="place-popup">
-                <h4>${locationDetails.name} (${locationDetails.shortName})</h4>
-                <p>สถานะความหนาแน่น: <b>${locationDetails.densityStatus || 'N/A'}</b></p>
-                <button class="details-btn" 
-                        data-shortname="${locationDetails.shortName}"
-                        onclick="infoWindow.close(); fetchAndDisplayDetails(this.getAttribute('data-shortname'));">
-                    ดูรายละเอียดเต็ม (Task 3.5)
-                </button>
-            </div>
+        <div class="place-popup">
+            <h4>${locationDetails.name} (${shortName})</h4> 
+            <p>เวลาทำการ: ${workingHours}</p> 
+            
+            <a href="detail.html?shortName=${encodeURIComponent(shortName)}" class="details-btn">
+                ดูรายละเอียด 
+            </a>
+        </div> 
         `;
+        // <p>สถานะความหนาแน่น: <b>${locationDetails.densityStatus || 'N/A'}</b></p>
         
-        // สร้าง Marker ชั่วคราวเพื่อใช้เป็น Anchor ของ Popup
         const tempMarker = new google.maps.Marker({
             position: position,
             map: map,
@@ -380,13 +401,26 @@ async function fetchAndDisplayDetails(searchTerm) {
         });
         
     } catch (error) {
+        // Log ข้อผิดพลาดทั้งหมดไปที่ Console สำหรับนักพัฒนา (Developer)
         console.error('Error in fetching and displaying details:', error);
-        alert("เกิดข้อผิดพลาดในการดึงข้อมูลสถานที่ กรุณาลองใหม่อีกครั้ง");
+    
+        // แจ้งเตือนผู้ใช้ถึงข้อผิดพลาดที่เกิดขึ้น
+    
+        let errorMessage = "เกิดข้อผิดพลาดในการดึงข้อมูลสถานที่ กรุณาลองใหม่อีกครั้ง";
+    
+        // ถ้า error เป็น instance ของ Error (เช่น Network Error, JSON parsing error)
+        if (error instanceof TypeError && error.message.includes('fetch')) {
+            // อาจเป็นปัญหาเรื่อง CORS, Server ปิดอยู่, หรือ Network หลุด
+            errorMessage = "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ Backend ได้ (ตรวจสอบว่า Server เปิดอยู่หรือไม่)";
+        }
+    
+        // แสดงข้อความเตือนไปยังผู้ใช้
+        alert(errorMessage);
     }
-}*/
+}
 
 // Mock Data: ข้อมูลสถานที่จำลอง (ใช้แทนข้อมูลที่ดึงจาก Backend)
-const MOCK_LOCATIONS_DATA = [
+/*const MOCK_LOCATIONS_DATA = [
     {
         name: "อาคารเรียนรวมสังคมศาสตร์ 3",
         shortName: "SC3",
@@ -420,4 +454,4 @@ const MOCK_LOCATIONS_DATA = [
         detailDescription: "แหล่งรวมตำราเรียนและอุปกรณ์การศึกษา",
         imagePath: "/image/โดม.jpg" 
     }
-];
+];*/
