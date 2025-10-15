@@ -1,6 +1,8 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "places")
@@ -9,11 +11,16 @@ public class Place {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+	@NotBlank(message = "ชื่อสถานที่ห้ามว่าง")
     @Column(nullable = false)
     private String name;
 
     private String description;
+    
+    @NotNull(message = "Latitude ต้องมีค่า")
     private Double latitude;
+    
+    @NotNull(message = "Longitude ต้องมีค่า")
     private Double longitude;
 
     public Place() {}
