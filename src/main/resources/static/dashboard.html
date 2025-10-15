@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="admin-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <header>Admin Dashboard</header>
+        <main>
+            <div class="actions-bar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="ค้นหาสถานที่">
+                </div>
+                <a href="add-location.html" class="add-button" style="text-decoration: none;">
+                    <i class="fas fa-plus"></i> Add New Location
+                </a>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Opentime</th>
+                        <th>Closetime</th>
+                        <th>Latitude</th>
+                        <th>Longitude</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="location-table-body">
+                    </tbody>
+            </table>
+            
+            <div class="pagination" id="pagination-wrapper">
+                </div>
+        </main>
+    </div>
+
+    <footer>
+        <a href="map.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="category.html" class="nav-item"><i class="fas fa-cog"></i><span>Change Category</span></a>
+        <a href="#" class="nav-item"><i class="fas fa-user"></i><span>Profile</span></a>
+    </footer>
+
+    <script src="dashboard-script.js"></script>
+
+</body>
+</html>
