@@ -67,55 +67,95 @@
 
     <script src="map-script.js"></script>
     <script>
-         // Logic ในการดึงข้อมูลจาก URL และแสดงผล
-         document.addEventListener('DOMContentLoaded', function() {
+        // ใช้ API Endpoint เดียวกับที่ระบุใน fetchAndDisplayDetails
+        const API_BASE_URL = 'http://localhost:8080/api/locations';
+
+        async function fetchAndDisplayDetails() {
+            // ดึง shortName จาก URL (ใช้เป็น searchTerm)
             const params = new URLSearchParams(window.location.search);
-            const shortName = params.get('shortName');
+            const searchTerm = params.get('shortName');
+        
+            const locationNameElement = document.getElementById('location-name');
 
-                if (shortName) {
-                // ค้นหาข้อมูลจาก Mock Data ใน map-script.js
-                 const locationDetails = MOCK_LOCATIONS_DATA.find(loc => 
-                     loc.shortName.toLowerCase() === shortName.toLowerCase()
-                );
+            if (!searchTerm) {
+                locationNameElement.textContent = 'กรุณาระบุสถานที่';
+                return;
+            }
+        
+            locationNameElement.textContent = `กำลังโหลดข้อมูลสำหรับ ${searchTerm}...`;
 
-                if (locationDetails) {
-                    // 1. Logic สำหรับรูปภาพ
-                    const locationImage = document.getElementById('location-image');
-                    const placeholderIcon = document.getElementById('placeholder-icon');
-                    
-                    if (locationDetails.imagePath) {
-                        locationImage.src = locationDetails.imagePath;
-                        locationImage.style.display = 'block'; // แสดงรูปภาพ
-                        placeholderIcon.style.display = 'none'; // ซ่อนไอคอน
-                    } else {
-                        locationImage.style.display = 'none';
-                        placeholderIcon.style.display = 'block'; // แสดงไอคอนถ้าไม่มีรูป
-                    }
+            try {
+                // 1. Fetch Data: เรียก API ด้วย searchTerm
+                const response = await fetch(`${API_BASE_URL}?search=${searchTerm}`); 
 
-                    // 2. Logic สำหรับรายละเอียดอื่นๆ
-                    document.getElementById('detail-title').textContent = `${locationDetails.name} Details`;
-                    document.getElementById('location-name').textContent = `${locationDetails.name} (${locationDetails.shortName})`;
-     
-                    document.getElementById('working-hours-weekday').textContent = locationDetails.workingHoursWeekday || 'N/A';
-                    document.getElementById('working-hours-weekend').textContent = locationDetails.workingHoursWeekend || 'N/A';
- 
-                    /*const densityBox = document.getElementById('density-status-box');
-                    densityBox.textContent = `ความหนาแน่น: ${locationDetails.densityStatus}`;
-                    densityBox.className = 'density-level-box ' + (
-                        locationDetails.densityStatus === 'ว่าง' ? 'low' : 
-                        locationDetails.densityStatus === 'ปานกลาง' ? 'medium' : 'high'
-                    );*/
-
-                    document.getElementById('full-description-text').textContent = locationDetails.detailDescription || 'ไม่มีข้อมูลคำอธิบายเพิ่มเติม';
-                } else {
-                    document.getElementById('location-name').textContent = `ไม่พบข้อมูลสำหรับ ${shortName}`;
-                    }
-                } else {
-                    document.getElementById('location-name').textContent = 'กรุณาระบุสถานที่';
+                if (!response.ok) {
+                    locationNameElement.textContent = `ไม่พบสถานที่ '${searchTerm}' ในระบบ`;
+                    console.error(`Fetch failed with status: ${response.status}`);
+                    return;
                 }
-        });
+            
+                // รับค่ากลับมาเป็น List (Array) ของสถานที่
+                const locationList = await response.json(); 
+            
+                if (locationList.length === 0) {
+                    locationNameElement.textContent = `ไม่พบข้อมูลรายละเอียดสำหรับ ${searchTerm}`;
+                    return;
+                }
+
+                // 2. เลือกรายการแรกมาใช้งาน (ตาม Logic ของ map.html)
+                const locationDetails = locationList[0]; 
+            
+                // 3. เตรียมข้อมูล
+            
+                // สร้าง workingHours จาก openTime และ closeTime
+                const workingHours = (locationDetails.openTime && locationDetails.closeTime)
+                    ? `${locationDetails.openTime} - ${locationDetails.closeTime}`
+                    : 'N/A';
+                
+                // shortName: ใช้ name เป็น shortName ชั่วคราว (ตาม Logic ของ map.html)
+                const shortNameDisplay = locationDetails.name; 
+            
+                // กำหนด field ที่ใช้สำหรับคำอธิบายเพิ่มเติม (สมมติว่าเป็น field ชื่อ description)
+                const descriptionText = locationDetails.description || 'ไม่มีข้อมูลคำอธิบายเพิ่มเติม';
+
+
+                // 4. อัปเดต Element บนหน้าเว็บ
+            
+                // อัปเดต Title Bar
+                document.getElementById('detail-title').textContent = `${locationDetails.name} Details`;
+                // อัปเดตชื่อสถานที่
+                locationNameElement.textContent = `${locationDetails.name} (${searchTerm})`; 
+
+                // Logic สำหรับรูปภาพ
+                const locationImage = document.getElementById('location-image');
+                const placeholderIcon = document.getElementById('placeholder-icon');
+            
+                // สมมติว่า field รูปภาพคือ imagePath (หรือ imageUrl)
+                if (locationDetails.imagePath || locationDetails.imageUrl) { 
+                    locationImage.src = locationDetails.imagePath || locationDetails.imageUrl;
+                    locationImage.style.display = 'block'; 
+                    placeholderIcon.style.display = 'none'; 
+                } else {
+                    locationImage.style.display = 'none';
+                    placeholderIcon.style.display = 'block'; 
+                }
+
+                // อัปเดตเวลาทำการ (เนื่องจาก Backend ให้เวลามาเพียงชุดเดียว จึงใช้กับทั้ง weekday และ weekend)
+                document.getElementById('working-hours-weekday').textContent = workingHours;
+                document.getElementById('working-hours-weekend').textContent = workingHours;
+            
+                // อัปเดตคำอธิบายเพิ่มเติม
+                document.getElementById('full-description-text').textContent = descriptionText;
+            
+            } catch (error) {
+                console.error('Error fetching location data for details page:', error);
+                locationNameElement.textContent = `เกิดข้อผิดพลาดในการดึงข้อมูล: ${error.message}`;
+            }
+        }
+    
+        // เรียกใช้ฟังก์ชันเมื่อ DOM โหลดเสร็จ
+        document.addEventListener('DOMContentLoaded', fetchAndDisplayDetails);
     </script>
-	</script>
 
     
 </body>
