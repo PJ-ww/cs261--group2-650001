@@ -4,7 +4,6 @@ import com.example.demo.model.Place;
 import com.example.demo.service.PlaceService;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
-
 import java.util.List;
 
 @RestController
@@ -18,25 +17,25 @@ public class PlaceController {
         this.placeService = placeService;
     }
 
-    @GetMapping
+    // ✅ บังคับให้ส่ง JSON UTF-8 (แก้ปัญหา ???????)
+    @GetMapping(produces = "application/json; charset=UTF-8")
     public List<Place> getAllPlaces(@RequestParam(required = false) String search) {
         return placeService.searchPlaces(search);
     }
 
-    @PostMapping
+    @PostMapping(produces = "application/json; charset=UTF-8")
     public Place addPlace(@Valid @RequestBody Place place) {
         return placeService.addPlace(place);
     }
-    
-    @PutMapping("/{id}")
+
+    @PutMapping(value = "/{id}", produces = "application/json; charset=UTF-8")
     public Place updatePlace(@PathVariable Long id, @RequestBody Place place) {
         return placeService.updatePlace(id, place);
     }
-    
+
     @DeleteMapping("/{id}")
     public String deletePlace(@PathVariable Long id) {
         placeService.deletePlace(id);
         return "ลบสถานที่เรียบร้อยแล้ว";
     }
-
 }

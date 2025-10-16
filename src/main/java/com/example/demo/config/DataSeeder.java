@@ -24,8 +24,10 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void loadInitialData() {
-        if (categoryRepository.count() > 0 || placeRepository.count() > 0) {
-            return; // ข้ามการเพิ่มข้อมูลหากมีข้อมูลอยู่แล้ว
+    	
+    	if (categoryRepository.count() > 0 && placeRepository.count() > 0) {
+            System.out.println("⚠️ ข้ามการ seed เพราะมีข้อมูลอยู่แล้ว");
+            return;
         }
 
         System.out.println("Loading ALL places from PDF files into the database...");
@@ -174,7 +176,21 @@ public class DataSeeder implements CommandLineRunner {
         
         // --- 3. บันทึกข้อมูลสถานที่ทั้งหมด ---
         placeRepository.saveAll(places);
+        System.out.println("✅ Saved places count: " + placeRepository.count());
+        System.out.println("✅ Categories count: " + categoryRepository.count());
+       
 
         System.out.println(categoryRepository.count() + " categories and " + placeRepository.count() + " places have been loaded.");
+       
     }
-}
+    public void seedAllData() {
+            try {
+                loadInitialData();
+                System.out.println("✅ DataSeeder: seedAllData() เรียกใช้งานสำเร็จ!");
+            } catch (Exception e) {
+                System.err.println("❌ DataSeeder: เกิดข้อผิดพลาดระหว่าง seeding → " + e.getMessage());
+                e.printStackTrace();
+            }
+        } // <-- ปิด seedAllData()
+
+        } // <-- ปิด class DataSeeder
