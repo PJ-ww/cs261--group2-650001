@@ -44,14 +44,13 @@
                 <a href="add-category.html" class="add-button"><i class="fas fa-plus"></i> Add New Category</a>
             </div>
             <table class="data-table">
-                <thead>
-                    <tr>
-                        <th style="width: 10%;">ID</th>
-                        <th style="width: 30%;">Name</th>
-                        <th>Description</th>
-                        <th style="width: 10%;"></th>
-                    </tr>
-                </thead>
+				<thead>
+				  <tr>
+				    <th style="width: 10%;">ID</th>
+				    <th>Category</th>
+				    <th style="width: 15%; text-align:center;">Action</th>
+				  </tr>
+				</thead>
                 <tbody id="category-table-body"></tbody>
             </table>
         </main>
@@ -62,122 +61,84 @@
         <a href="#" class="nav-item"><i class="fas fa-user"></i><span>Profile</span></a>
     </footer>
 
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Use the real storage key
-        const storageKey = 'categories';
+	<script>
+	document.addEventListener('DOMContentLoaded', async function () {
+	  const API_URL = 'http://localhost:8080/api/categories';
+	  const tableBody = document.getElementById('category-table-body');
+	  const searchInput = document.getElementById('searchInput');
+	  let categories = [];
 
-        const tableBody = document.getElementById('category-table-body');
-        const searchInput = document.getElementById('searchInput');
-        let categories = JSON.parse(localStorage.getItem(storageKey)) || [];
-        let rowToDelete = null;
+	  // 🔹 โหลดข้อมูลจาก backend
+	  async function loadCategories() {
+	    try {
+	      const res = await fetch(API_URL);
+	      if (!res.ok) throw new Error('โหลดข้อมูลไม่สำเร็จ');
+	      const dto = await res.json();
+	      categories = Array.isArray(dto) ? dto : dto.categories || [];
+	      renderTable(categories);
+	    } catch (err) {
+	      console.error('❌ โหลดข้อมูลล้มเหลว:', err);
+	      tableBody.innerHTML = `<tr><td colspan="3" style="text-align:center;">ไม่สามารถโหลดข้อมูลได้</td></tr>`;
+	    }
+	  }
 
-        function renderTable(dataToRender) {
-            tableBody.innerHTML = '';
-            if (dataToRender.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">ไม่พบข้อมูล</td></tr>`;
-                return;
-            }
-            dataToRender.forEach((category, index) => {
-                const row = document.createElement('tr');
-                row.setAttribute('data-id', category.id);
-                row.innerHTML = `
-                    <td>${index + 1}</td><td>${category.name}</td><td>${category.description}</td>
-                    <td class="actions-cell">
-                        <i class="fas fa-ellipsis-v menu-icon"></i>
-                        <div class="dropdown-menu">
-                            <a href="add-category.html?edit=${category.id}" class="edit-btn"><i class="fas fa-pencil-alt"></i> Edit</a>
-                            <a href="#" class="delete-btn"><i class="fas fa-trash-alt"></i> Delete</a>
-                        </div>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
+	  // 🔹 แสดงตาราง
+	  function renderTable(data) {
+	    tableBody.innerHTML = '';
+	    if (data.length === 0) {
+	      tableBody.innerHTML = `<tr><td colspan="3" style="text-align:center;">ไม่พบข้อมูลหมวดหมู่</td></tr>`;
+	      return;
+	    }
+	    data.forEach(cat => {
+	      const row = document.createElement('tr');
+	      row.innerHTML = `
+	        <td>${cat.id}</td>
+	        <td>${cat.category || '-'}</td>
+	        <td style="text-align:center;">
+	          <button class="delete-btn" data-id="${cat.id}" 
+	                  style="background-color:#d32f2f;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;">
+	            <i class="fas fa-trash-alt"></i> ลบ
+	          </button>
+	        </td>
+	      `;
+	      tableBody.appendChild(row);
+	    });
+	  }
 
-        searchInput.addEventListener('keyup', function() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const filteredData = categories.filter(cat =>
-                (cat.name && cat.name.toLowerCase().includes(searchTerm)) ||
-                (cat.description && cat.description.toLowerCase().includes(searchTerm))
-            );
-            renderTable(filteredData);
-        });
+	  // 🔹 ระบบค้นหา
+	  searchInput.addEventListener('keyup', function () {
+	    const term = searchInput.value.toLowerCase();
+	    const filtered = categories.filter(c => c.category && c.category.toLowerCase().includes(term));
+	    renderTable(filtered);
+	  });
 
-        tableBody.addEventListener('click', function(event) {
-            const target = event.target;
-            const deleteButton = target.closest('.delete-btn');
-            if (target.classList.contains('menu-icon')) {
-                document.querySelectorAll('.dropdown-menu.show').forEach(menu => { if (menu !== target.nextElementSibling) menu.classList.remove('show'); });
-                target.nextElementSibling.classList.toggle('show');
-                return;
-            }
-            if (deleteButton) {
-                event.preventDefault();
-                const row = deleteButton.closest('tr');
-                if (deleteButton.classList.contains('confirm-btn')) {
-                    const categoryId = Number(row.getAttribute('data-id'));
-                    categories = categories.filter(cat => cat.id !== categoryId);
-                    localStorage.setItem(storageKey, JSON.stringify(categories));
-                    renderTable(categories);
-                    rowToDelete = null;
-                } else {
-                    if (rowToDelete) {
-                        rowToDelete.classList.remove('row-pending-deletion');
-                        const originalBtn = rowToDelete.querySelector('.delete-btn');
-                        if (originalBtn) {
-                            originalBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete';
-                            originalBtn.classList.remove('confirm-btn');
-                        }
-                    }
-                    row.classList.add('row-pending-deletion');
-                    deleteButton.innerHTML = 'Confirm?';
-                    deleteButton.classList.add('confirm-btn');
-                    rowToDelete = row;
-                }
-            }
-        });
+	  // 🔹 ลบหมวดหมู่จาก backend
+	  tableBody.addEventListener('click', async function (e) {
+	    const btn = e.target.closest('.delete-btn');
+	    if (!btn) return;
 
-        window.addEventListener('click', function(event) {
-            if (!event.target.closest('.actions-cell')) {
-                document.querySelectorAll('.dropdown-menu.show').forEach(menu => menu.classList.remove('show'));
-                if (rowToDelete) {
-                    rowToDelete.classList.remove('row-pending-deletion');
-                    const originalBtn = rowToDelete.querySelector('.delete-btn');
-                    if (originalBtn) {
-                       originalBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete';
-                       originalBtn.classList.remove('confirm-btn');
-                    }
-                    rowToDelete = null;
-                }
-            }
-        });
+	    const id = btn.getAttribute('data-id');
+	    const cat = categories.find(c => c.id == id);
+	    if (!cat) return;
 
-        renderTable(categories);
-    });
-    </script>
-	
-	<script type="module">
-	  import { protectPage } from "/authGuard.js";
+	    if (!confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบหมวดหมู่ "${cat.category}" ?`)) return;
 
-	  // 🧩 บังคับเฉพาะ admin
-	  protectPage(true);
-
-	  // 🚪 เคลียร์ role ตอนออกจากหน้า admin
-	  window.addEventListener("beforeunload", (event) => {
-	    const nextUrl = document.activeElement?.href || "";
-	    
-	    // ถ้า URL ถัดไปไม่ใช่ /admin/... หรือว่าง (เช่น ปิดแท็บ)
-	    if (!nextUrl.includes("/admin/")) {
-	      console.log("🧹 Leaving admin area → clearing auth info...");
-	      localStorage.removeItem("role");
-	      localStorage.removeItem("tu_token");
-	      localStorage.removeItem("student_info");
-	    } else {
-	      console.log("🔒 Still inside admin area, keep session.");
+	    try {
+	      const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+	      if (!res.ok) throw new Error(await res.text());
+	      alert(`✅ ลบ "${cat.category}" สำเร็จ`);
+	      await loadCategories(); // รีเฟรชข้อมูลใหม่
+	    } catch (err) {
+	      alert('❌ เกิดข้อผิดพลาดในการลบข้อมูล');
+	      console.error(err);
 	    }
 	  });
+
+	  // โหลดข้อมูลตอนเริ่ม
+	  await loadCategories();
+	});
 	</script>
+
 
 </body>
 </html>
