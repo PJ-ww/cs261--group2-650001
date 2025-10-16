@@ -51,18 +51,6 @@
 
 	  // 🧩 บังคับเฉพาะ admin
 	  protectPage(true);
-
-	  window.addEventListener("beforeunload", (event) => {
-	    const nextUrl = document.activeElement?.href || "";
-	    
-	    // ถ้า URL ถัดไปไม่ใช่ /admin/... หรือว่าง (เช่น ปิดแท็บ)
-	    if (!nextUrl.includes("/admin/")) {
-	      console.log("🧹 Leaving admin area → clearing auth info...");
-	      localStorage.removeItem("role");
-	      localStorage.removeItem("tu_token");
-	      localStorage.removeItem("student_info");
-	    } else {
-	      console.log("🔒 Still inside admin area, keep session.");
 	    }
 	  });	
 	</script>
