@@ -10,40 +10,26 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;      // เช่น "อาหารและเครื่องดื่ม"
-    private String category;  // เช่น "คณะและอาคารเรียน"
+    // ✅ บังคับใช้ NVARCHAR เพื่อเก็บภาษาไทยได้
+    @Column(name = "name", columnDefinition = "NVARCHAR(255)")
+    private String name;      
 
-    // Constructor เปล่าที่ JPA ต้องใช้
+    @Column(name = "category", columnDefinition = "NVARCHAR(255)")
+    private String category;  
+
     public Category() {}
 
-    // Constructor ที่คุณใช้สร้าง category เองได้
     public Category(Long id, String category) {
         this.id = id;
         this.category = category;
     }
 
-    // Getter & Setter ทั้งหมด
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
 }
