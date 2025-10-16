@@ -130,9 +130,10 @@
                 const locationImage = document.getElementById('location-image');
                 const placeholderIcon = document.getElementById('placeholder-icon');
             
+				
                 // สมมติว่า field รูปภาพคือ imagePath (หรือ imageUrl)
                 if (locationDetails.imagePath || locationDetails.imageUrl) { 
-                    locationImage.src = locationDetails.imagePath || locationDetails.imageUrl;
+                    locationImage.src = locationDetails.imageUrl;
                     locationImage.style.display = 'block'; 
                     placeholderIcon.style.display = 'none'; 
                 } else {
