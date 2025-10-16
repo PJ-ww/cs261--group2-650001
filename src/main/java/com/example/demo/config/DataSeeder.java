@@ -24,7 +24,7 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void loadInitialData() {
-    	
+    		
     	if (categoryRepository.count() > 0 && placeRepository.count() > 0) {
             System.out.println("⚠️ ข้ามการ seed เพราะมีข้อมูลอยู่แล้ว");
             return;
