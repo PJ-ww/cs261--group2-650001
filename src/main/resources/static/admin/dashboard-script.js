@@ -1,153 +1,173 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // --- 1. GET ELEMENTS AND DATA ---
-    const tableBody = document.getElementById('location-table-body');
-    const searchInput = document.getElementById('searchInput');
-    const paginationWrapper = document.getElementById('pagination-wrapper');
-    let locations = JSON.parse(localStorage.getItem('locations')) || [];
-    let currentData = locations; // Data currently being displayed (can be filtered)
-    let rowToDelete = null; 
+document.addEventListener('DOMContentLoaded', function () {
+  const tableBody = document.getElementById('location-table-body');
+  const searchInput = document.getElementById('searchInput');
+  const paginationWrapper = document.getElementById('pagination-wrapper');
 
-    // --- PAGINATION VARIABLES ---
-    let currentPage = 1;
-    const rowsPerPage = 5; // Show 5 rows per page
+  const API_URL = '/api/locations'; // ✅ ใช้ path แบบ relative
 
-    // --- 2. RENDER TABLE FUNCTION ---
-    function renderTable(dataToRender, page = 1) {
-        tableBody.innerHTML = '';
-        currentPage = page;
+  let locations = [];
+  let currentData = [];
+  let currentPage = 1;
+  const rowsPerPage = 5;
+  let rowToDelete = null;
 
-        const start = (currentPage - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-        const paginatedData = dataToRender.slice(start, end);
+  // --- โหลดข้อมูลจาก backend ---
+  async function loadLocations(searchTerm = '') {
+    try {
+      const url = searchTerm ? `${API_URL}?search=${encodeURIComponent(searchTerm)}` : API_URL;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('โหลดข้อมูลไม่สำเร็จ');
+      const data = await response.json();
 
-        if (paginatedData.length === 0 && dataToRender.length > 0) {
-             tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;">ไม่พบข้อมูลในหน้านี้</td></tr>`;
-             return;
-        }
-        if (dataToRender.length === 0){
-             tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;">ไม่พบข้อมูล</td></tr>`;
-             return;
-        }
+      locations = data;
+      currentData = locations;
 
-        paginatedData.forEach(location => {
-            const originalIndex = locations.findIndex(loc => loc.id === location.id);
-            const row = document.createElement('tr');
-            row.setAttribute('data-id', location.id);
-            row.innerHTML = `
-                <td>${originalIndex + 1}</td><td>${location.name}</td><td>${location.category}</td><td>${location.description}</td>
-                <td>${location.opentime}</td><td>${location.closetime}</td><td>${location.latitude}</td><td>${location.longitude}</td>
-                <td class="actions-cell">
-                    <i class="fas fa-ellipsis-v menu-icon"></i>
-                    <div class="dropdown-menu">
-                        <a href="add-location.html?edit=${location.id}" class="edit-btn"><i class="fas fa-pencil-alt"></i> Edit</a>
-                        <a href="#" class="delete-btn"><i class="fas fa-trash-alt"></i> Delete</a>
-                    </div>
-                </td>
-            `;
-            tableBody.appendChild(row);
-        });
+      renderTable(currentData, 1);
+      setupPagination(currentData);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;">โหลดข้อมูลไม่สำเร็จ</td></tr>`;
+    }
+  }
+
+  // --- Render ตาราง ---
+  function renderTable(dataToRender, page = 1) {
+    tableBody.innerHTML = '';
+    currentPage = page;
+
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const paginatedData = dataToRender.slice(start, end);
+
+    if (paginatedData.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;">ไม่พบข้อมูล</td></tr>`;
+      return;
     }
 
-    // --- 3. PAGINATION SETUP FUNCTION ---
-    function setupPagination(dataToRender) {
-        paginationWrapper.innerHTML = '';
-        const pageCount = Math.ceil(dataToRender.length / rowsPerPage);
+    paginatedData.forEach((location, index) => {
+      const row = document.createElement('tr');
+      row.setAttribute('data-id', location.id);
+      row.innerHTML = `
+        <td>${start + index + 1}</td>
+        <td>${location.name || '-'}</td>
+        <td>${location.category?.name || location.category || '-'}</td>
+        <td>${location.description || '-'}</td>
+        <td>${location.opentime || '-'}</td>
+        <td>${location.closetime || '-'}</td>
+        <td>${location.latitude || '-'}</td>
+        <td>${location.longitude || '-'}</td>
+        <td class="actions-cell">
+          <i class="fas fa-ellipsis-v menu-icon"></i>
+          <div class="dropdown-menu">
+            <a href="add-location.html?edit=${location.id}" class="edit-btn"><i class="fas fa-pencil-alt"></i> Edit</a>
+            <a href="#" class="delete-btn"><i class="fas fa-trash-alt"></i> Delete</a>
+          </div>
+        </td>
+      `;
+      tableBody.appendChild(row);
+    });
+  }
 
-        let prevButton = document.createElement('button');
-        prevButton.innerHTML = '&laquo;';
-        prevButton.disabled = currentPage === 1;
-        prevButton.addEventListener('click', () => {
-            renderTable(currentData, currentPage - 1);
-            setupPagination(currentData);
-        });
-        paginationWrapper.appendChild(prevButton);
+  // --- Pagination ---
+  function setupPagination(dataToRender) {
+    paginationWrapper.innerHTML = '';
+    const pageCount = Math.ceil(dataToRender.length / rowsPerPage);
 
-        for (let i = 1; i <= pageCount; i++) {
-            let btn = document.createElement('button');
-            btn.innerText = i;
-            if (currentPage === i) {
-                btn.classList.add('active');
-            }
-            btn.addEventListener('click', () => {
-                renderTable(currentData, i);
-                setupPagination(currentData);
-            });
-            paginationWrapper.appendChild(btn);
-        }
+    const prevButton = document.createElement('button');
+    prevButton.innerHTML = '&laquo;';
+    prevButton.disabled = currentPage === 1;
+    prevButton.onclick = () => {
+      renderTable(currentData, currentPage - 1);
+      setupPagination(currentData);
+    };
+    paginationWrapper.appendChild(prevButton);
 
-        let nextButton = document.createElement('button');
-        nextButton.innerHTML = '&raquo;';
-        nextButton.disabled = currentPage === pageCount;
-        nextButton.addEventListener('click', () => {
-            renderTable(currentData, currentPage + 1);
-            setupPagination(currentData);
-        });
-        paginationWrapper.appendChild(nextButton);
-    }
-    
-    // --- 4. SEARCH FUNCTIONALITY ---
-    searchInput.addEventListener('keyup', function() {
-        const searchTerm = searchInput.value.toLowerCase();
-        currentData = locations.filter(location => Object.values(location).join(' ').toLowerCase().includes(searchTerm));
-        renderTable(currentData, 1);
+    for (let i = 1; i <= pageCount; i++) {
+      const btn = document.createElement('button');
+      btn.innerText = i;
+      if (i === currentPage) btn.classList.add('active');
+      btn.onclick = () => {
+        renderTable(currentData, i);
         setupPagination(currentData);
-    });
+      };
+      paginationWrapper.appendChild(btn);
+    }
 
-    // --- 5. EDIT/DELETE MENU FUNCTIONALITY ---
-    tableBody.addEventListener('click', function(event) {
-        const target = event.target;
-        const deleteButton = target.closest('.delete-btn');
+    const nextButton = document.createElement('button');
+    nextButton.innerHTML = '&raquo;';
+    nextButton.disabled = currentPage === pageCount;
+    nextButton.onclick = () => {
+      renderTable(currentData, currentPage + 1);
+      setupPagination(currentData);
+    };
+    paginationWrapper.appendChild(nextButton);
+  }
 
-        if (target.classList.contains('menu-icon')) {
-            document.querySelectorAll('.dropdown-menu.show').forEach(menu => { if (menu !== target.nextElementSibling) menu.classList.remove('show'); });
-            target.nextElementSibling.classList.toggle('show');
-            return;
+  // --- ค้นหา ---
+  searchInput.addEventListener('keyup', async function () {
+    const searchTerm = searchInput.value.trim();
+    await loadLocations(searchTerm);
+  });
+
+  // --- เมนูจุดสามจุด ---
+  tableBody.addEventListener('click', function (event) {
+    const target = event.target;
+
+    // ถ้าคลิกที่จุดสามจุด
+    if (target.classList.contains('menu-icon')) {
+      event.stopPropagation(); // ✅ ป้องกันเมนูปิดเอง
+      document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+        if (menu !== target.nextElementSibling) menu.classList.remove('show');
+      });
+      target.nextElementSibling.classList.toggle('show');
+      return;
+    }
+  });
+
+  // ปิด dropdown ถ้าคลิกนอก cell
+  window.addEventListener('click', function (event) {
+    if (!event.target.closest('.actions-cell')) {
+      document.querySelectorAll('.dropdown-menu.show')
+        .forEach(menu => menu.classList.remove('show'));
+    }
+  });
+
+  // --- ลบข้อมูล ---
+  tableBody.addEventListener('click', async function (e) {
+    const deleteBtn = e.target.closest('.delete-btn');
+    if (!deleteBtn) return;
+    e.preventDefault();
+
+    const row = deleteBtn.closest('tr');
+    const id = row.getAttribute('data-id');
+
+    if (deleteBtn.classList.contains('confirm-btn')) {
+      try {
+        const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('ลบข้อมูลไม่สำเร็จ');
+        await loadLocations();
+        rowToDelete = null;
+      } catch (err) {
+        console.error('Error deleting:', err);
+        alert('ไม่สามารถลบข้อมูลได้');
+      }
+    } else {
+      // กดครั้งแรก = แสดง Confirm?
+      if (rowToDelete) {
+        rowToDelete.classList.remove('row-pending-deletion');
+        const oldBtn = rowToDelete.querySelector('.delete-btn');
+        if (oldBtn) {
+          oldBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete';
+          oldBtn.classList.remove('confirm-btn');
         }
+      }
+      row.classList.add('row-pending-deletion');
+      deleteBtn.innerHTML = 'Confirm?';
+      deleteBtn.classList.add('confirm-btn');
+      rowToDelete = row;
+    }
+  });
 
-        if (deleteButton) {
-            event.preventDefault();
-            const row = deleteButton.closest('tr');
-            if (deleteButton.classList.contains('confirm-btn')) {
-                const locationId = Number(row.getAttribute('data-id'));
-                locations = locations.filter(location => location.id !== locationId);
-                localStorage.setItem('locations', JSON.stringify(locations));
-                currentData = locations;
-                renderTable(currentData, currentPage);
-                setupPagination(currentData);
-                rowToDelete = null;
-            } else {
-                if (rowToDelete) {
-                    rowToDelete.classList.remove('row-pending-deletion');
-                    const originalBtn = rowToDelete.querySelector('.delete-btn');
-                    if (originalBtn) {
-                        originalBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete';
-                        originalBtn.classList.remove('confirm-btn');
-                    }
-                }
-                row.classList.add('row-pending-deletion');
-                deleteButton.innerHTML = 'Confirm?';
-                deleteButton.classList.add('confirm-btn');
-                rowToDelete = row;
-            }
-        }
-    });
-
-    window.addEventListener('click', function(event) {
-        if (!event.target.closest('.actions-cell')) {
-            document.querySelectorAll('.dropdown-menu.show').forEach(menu => menu.classList.remove('show'));
-            if (rowToDelete) {
-                rowToDelete.classList.remove('row-pending-deletion');
-                const originalBtn = rowToDelete.querySelector('.delete-btn');
-                if (originalBtn) {
-                   originalBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete';
-                   originalBtn.classList.remove('confirm-btn');
-                }
-                rowToDelete = null;
-            }
-        }
-    });
-
-    // --- 6. INITIAL RENDER ---
-    renderTable(currentData, 1);
-    setupPagination(currentData);
+  // --- โหลดข้อมูลตอนเปิดหน้า ---
+  loadLocations();
 });
