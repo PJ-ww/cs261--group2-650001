@@ -1,9 +1,13 @@
+/* นำเข้า Google Fonts - Sarabun (เหมือน Dashboard) */
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
+
+/* General setup */
 body, html {
     margin: 0; 
     padding: 0; 
     height: 100%; 
     width: 100%;
-    font-family: 'Kanit', sans-serif; 
+    font-family: 'Sarabun', sans-serif;  /* ✅ เปลี่ยนจาก Kanit เป็น Sarabun */
     overflow: hidden;
 }
 
@@ -16,7 +20,6 @@ body, html {
     width: 100%; 
     height: 100%;
 }
-
 
 /* Top Bar */
 .top-bar {
@@ -54,7 +57,7 @@ body, html {
     outline: none; 
     padding: 10px;
     font-size: 16px; 
-    font-family: 'Kanit', sans-serif;
+    font-family: 'Sarabun', sans-serif;  /* ✅ เปลี่ยนตรงนี้ด้วย */
 }
 .search-container .search-btn {
     background-color: #FFD700; 
@@ -65,7 +68,6 @@ body, html {
     margin: 0 5px; 
     cursor: pointer;
 }
-
 
 /* Side Controls */
 .side-controls {
@@ -88,7 +90,6 @@ body, html {
     cursor: pointer;
 }
 
-
 /* Bottom Navigation Bar */
 .bottom-nav {
     position: absolute; 
@@ -110,7 +111,6 @@ body, html {
     text-decoration: none;
     color: #888; 
     font-size: 0.8rem;
-
 }
 .nav-item i {
     font-size: 1.5rem; 
@@ -120,16 +120,11 @@ body, html {
     color: #8B0000;
 }
 
-/*popup*/
-/* ------------------------------------------- */
-/* CSS สำหรับ Map Popup (Infowindow Content)  */
-/* ------------------------------------------- */
-
-/* คลาสหลักที่เราใช้ครอบเนื้อหาใน JS */
+/* Popup styling for map infowindows */
 .place-popup {
     padding: 5px;
-    max-width: 250px; /* จำกัดความกว้างเพื่อให้อ่านง่าย */
-    font-family: 'Kanit', sans-serif;
+    max-width: 250px;
+    font-family: 'Sarabun', sans-serif;  /* ✅ เปลี่ยนตรงนี้ด้วย */
 }
 
 /* หัวข้อ (ชื่อสถานที่) */
@@ -145,13 +140,13 @@ body, html {
     font-size: 0.9em;
 }
 
-/* Styling สำหรับปุ่มดูรายละเอียด (Task 3.5) */
+/* Styling สำหรับปุ่มดูรายละเอียด */
 .details-btn {
     display: block;
     width: 100%;
     padding: 6px;
     margin-top: 10px;
-    background-color: #e62d2d; /* สีแดงของ TU Compass */
+    background-color: #e62d2d;
     color: white;
     border: none;
     border-radius: 4px;

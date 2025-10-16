@@ -1,9 +1,12 @@
+/* นำเข้า Google Fonts - Sarabun */
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
+
 /* ตั้งค่าพื้นฐาน */
 body, html {
     margin: 0;
     padding: 0;
     height: 100%;
-    font-family: 'Kanit', sans-serif;
+    font-family: 'Sarabun', sans-serif; /* ✅ เปลี่ยนจาก Kanit เป็น Sarabun */
     overflow: hidden;
 }
 
@@ -31,7 +34,6 @@ body, html {
 
 .main-logo {
     width: 250px;
-    
 }
 
 /* ตัวโหลดหมุนๆ (Spinner) */
@@ -80,12 +82,14 @@ body, html {
     color: #d9534f;
     margin-top: 0;
     font-size: 1.5rem;
+    font-family: 'Sarabun', sans-serif; /* ✅ เพิ่มเพื่อความสม่ำเสมอ */
 }
 
 .modal-dialog p {
     color: #333;
     margin-bottom: 2rem;
     font-size: 1rem;
+    font-family: 'Sarabun', sans-serif; /* ✅ เพิ่ม */
 }
 
 .modal-dialog button {
@@ -94,7 +98,7 @@ body, html {
     border: none;
     padding: 0.8rem 2.5rem;
     border-radius: 25px;
-    font-family: 'Kanit', sans-serif;
+    font-family: 'Sarabun', sans-serif; /* ✅ เปลี่ยนจาก Kanit */
     font-size: 1rem;
     font-weight: bold;
     cursor: pointer;
@@ -112,26 +116,12 @@ body, html {
 }
 
 /* ========== Responsive Design ========== */
-/* ใช้สไตล์นี้เมื่อหน้าจอมีความกว้างอย่างน้อย 768px (แท็บเล็ตและเดสก์ท็อป) */
-
 @media (min-width: 768px) {
-
     .loading-screen {
-        /* จำกัดความกว้างสูงสุดของแอป */
         max-width: 450px;
-        
-        /* จำกัดความสูงสูงสุด */
         max-height: 850px; 
-        
-        /* ทำให้ขอบมนเหมือนแอป */
         border-radius: 20px;
-        
-        /* เพิ่มเงาให้ดูมีมิติ */
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        
-        /* จัดให้อยู่กึ่งกลางของหน้าจอ */
         margin: auto; 
     }
-
 }
-
