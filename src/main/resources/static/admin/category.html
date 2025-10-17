@@ -61,83 +61,13 @@
         <a href="#" class="nav-item"><i class="fas fa-user"></i><span>Profile</span></a>
     </footer>
 
-	<script>
-	document.addEventListener('DOMContentLoaded', async function () {
-	  const API_URL = 'http://localhost:8080/api/categories';
-	  const tableBody = document.getElementById('category-table-body');
-	  const searchInput = document.getElementById('searchInput');
-	  let categories = [];
+	<script src="category-script.js"></script>
+	
+	<script type="module">
+		  import { protectPage } from "/authGuard.js";
+		  protectPage(true); // 🧩 บังคับเฉพาะ admin
+		</script>
 
-	  // 🔹 โหลดข้อมูลจาก backend
-	  async function loadCategories() {
-	    try {
-	      const res = await fetch(API_URL);
-	      if (!res.ok) throw new Error('โหลดข้อมูลไม่สำเร็จ');
-	      const dto = await res.json();
-	      categories = Array.isArray(dto) ? dto : dto.categories || [];
-	      renderTable(categories);
-	    } catch (err) {
-	      console.error('❌ โหลดข้อมูลล้มเหลว:', err);
-	      tableBody.innerHTML = `<tr><td colspan="3" style="text-align:center;">ไม่สามารถโหลดข้อมูลได้</td></tr>`;
-	    }
-	  }
-
-	  // 🔹 แสดงตาราง
-	  function renderTable(data) {
-	    tableBody.innerHTML = '';
-	    if (data.length === 0) {
-	      tableBody.innerHTML = `<tr><td colspan="3" style="text-align:center;">ไม่พบข้อมูลหมวดหมู่</td></tr>`;
-	      return;
-	    }
-	    data.forEach(cat => {
-	      const row = document.createElement('tr');
-	      row.innerHTML = `
-	        <td>${cat.id}</td>
-	        <td>${cat.category || '-'}</td>
-	        <td style="text-align:center;">
-	          <button class="delete-btn" data-id="${cat.id}" 
-	                  style="background-color:#d32f2f;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;">
-	            <i class="fas fa-trash-alt"></i> ลบ
-	          </button>
-	        </td>
-	      `;
-	      tableBody.appendChild(row);
-	    });
-	  }
-
-	  // 🔹 ระบบค้นหา
-	  searchInput.addEventListener('keyup', function () {
-	    const term = searchInput.value.toLowerCase();
-	    const filtered = categories.filter(c => c.category && c.category.toLowerCase().includes(term));
-	    renderTable(filtered);
-	  });
-
-	  // 🔹 ลบหมวดหมู่จาก backend
-	  tableBody.addEventListener('click', async function (e) {
-	    const btn = e.target.closest('.delete-btn');
-	    if (!btn) return;
-
-	    const id = btn.getAttribute('data-id');
-	    const cat = categories.find(c => c.id == id);
-	    if (!cat) return;
-
-	    if (!confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบหมวดหมู่ "${cat.category}" ?`)) return;
-
-	    try {
-	      const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-	      if (!res.ok) throw new Error(await res.text());
-	      alert(`✅ ลบ "${cat.category}" สำเร็จ`);
-	      await loadCategories(); // รีเฟรชข้อมูลใหม่
-	    } catch (err) {
-	      alert('❌ เกิดข้อผิดพลาดในการลบข้อมูล');
-	      console.error(err);
-	    }
-	  });
-
-	  // โหลดข้อมูลตอนเริ่ม
-	  await loadCategories();
-	});
-	</script>
 
 
 </body>
