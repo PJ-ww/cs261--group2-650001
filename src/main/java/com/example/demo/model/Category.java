@@ -10,12 +10,9 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ✅ บังคับใช้ NVARCHAR เพื่อเก็บภาษาไทยได้
-    @Column(name = "name", columnDefinition = "NVARCHAR(255)")
-    private String name;      
-
+    // ✅ ใช้คำว่า category เป็นชื่อหมวดหมู่หลัก
     @Column(name = "category", columnDefinition = "NVARCHAR(255)")
-    private String category;  
+    private String category;
 
     public Category() {}
 
@@ -26,9 +23,6 @@ public class Category {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
 
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
