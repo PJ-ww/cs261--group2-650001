@@ -13,7 +13,7 @@ body {
 :root {
     --primary-maroon: #801d1d; /* Dark Maroon/Red */
     --light-pink: #e6a0a0; /* Light Pink for input fields */
-    --text-gold: #c7903f; /* Gold for "Profile" text */
+    --text-gold: white; /* Gold for "Profile" text */
 }
 
 /* --- Header Styling (ใช้ร่วมกัน) --- */
