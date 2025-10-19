@@ -28,15 +28,18 @@
       for <span class="bold">more function!</span>
     </p>
 
-    <!-- ✅ ใช้ onsubmit เรียก login() แทน action -->
-    <form class="login-form" onsubmit="event.preventDefault(); login();">
-      <input id="studentId" type="text" placeholder="Student ID" class="input-field" required>
-      <input id="citizenId" type="password" placeholder="Password" class="input-field" required>
+	<form class="login-form" onsubmit="event.preventDefault(); login();">
+	  <input id="studentId" type="text" placeholder="Student ID" class="input-field" required>
 
-      <button type="submit" class="sign-in-button">Sign in</button>
-    </form>
+	  <div class="password-container">
+	    <input id="citizenId" type="password" placeholder="Password" class="input-field" required>
+	    <i class="fas fa-eye toggle-password" id="togglePassword"></i>
+	  </div>
 
-    <a href="#" class="guest-link">Use for guest</a>
+	  <button type="submit" class="sign-in-button">Sign in</button>
+	</form>
+
+	<a href="#" class="guest-link">Use for guest</a>
   </main>
 
   <footer class="footer-nav">
@@ -95,6 +98,19 @@
       } else {
         window.location.href = "login.html";
       }
+    });
+  </script>
+  <script>
+    const togglePassword = document.getElementById("togglePassword");
+    const passwordField = document.getElementById("citizenId");
+
+    togglePassword.addEventListener("click", () => {
+      const type = passwordField.getAttribute("type") === "password" ? "text" : "password";
+      passwordField.setAttribute("type", type);
+
+      // เปลี่ยนไอคอน 👁 ↔️ 👁‍🗨
+      togglePassword.classList.toggle("fa-eye");
+      togglePassword.classList.toggle("fa-eye-slash");
     });
   </script>
 
