@@ -292,3 +292,25 @@ body {
     cursor: pointer;
     width: 100%;
 }
+.password-container {
+  position: relative;
+  width: 100%;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 15px;
+  top: 36.5%;
+  transform: translateY(-50%);
+  color: #666;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  height: auto;
+  width: auto;
+  pointer-events: auto;
+}
+
+.toggle-password:hover {
+  color: var(--primary-maroon);
+}
