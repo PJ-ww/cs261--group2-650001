@@ -101,13 +101,18 @@ async function initMap() {
                     // 1. สร้างเนื้อหา HTML สำหรับ Popup (ใช้ข้อมูลจาก Mock Data)
                     const content = `
                         <div class="place-popup">
-                            <h4>${location.name} (${location.shortName})</h4>
-                            <p>เวลาทำการ: ${location.workingHours || 'N/A'}</p> 
+                            <h4>${location.name} (${location.description})</h4>
+							<p>
+							  เวลาทำการ: 
+							  ${(location.openTime?.trim() && location.closeTime?.trim()) 
+							    ? `${location.openTime} - ${location.closeTime}` 
+							    : 'N/A'}
+							</p>
                             <p>สถานะความหนาแน่น: <b>${location.densityStatus || 'N/A'}</b></p>
                     
-                            <a href="detail.html?shortName=${location.shortName}" class="details-btn">
-                                ดูรายละเอียด 
-                            </a>
+							<a href="detail.html?shortName=${encodeURIComponent(location.name)}" class="details-btn">
+							    ดูรายละเอียด
+							</a>
                         </div>
                     `;
             
