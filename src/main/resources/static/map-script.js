@@ -74,15 +74,14 @@ async function initMap() {
             // ปรับปรุง: ใช้ MOCK DATA แทนการเรียก Fetch API
             // =========================================================
 
-            /*
+ 
             const response = await fetch('http://localhost:8080/api/locations');
             if (!response.ok) {
                 throw new Error(`HTTP error! สถานะ: ${response.status}`);
             }
             const locations = await response.json();
-            */
 
-            const locations = MOCK_LOCATIONS_DATA; // <<< ใช้ข้อมูลจำลอง
+            //const locations = MOCK_LOCATIONS_DATA; // <<< ใช้ข้อมูลจำลอง
         
             locations.forEach(location => {
             
