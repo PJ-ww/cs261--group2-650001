@@ -5,6 +5,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.demo.controller.DataSeeder;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,26 +15,23 @@ import java.nio.file.Paths;
 @CrossOrigin(origins = "*") // อนุญาตให้ frontend (localhost หรืออื่นๆ) เรียกได้
 public class ImageController {
 
-    @GetMapping("/images/{filename}")
+    @GetMapping("/{filename}")
     public ResponseEntity<Resource> getImage(@PathVariable String filename) {
-        try {
-            Path file = Paths.get("uploads/" + filename);
-            Resource resource = new FileSystemResource(file);
+        // ชี้ไปที่โฟลเดอร์ image (ที่อยู่ข้างนอก src)
+        Path file = Paths.get("image/" + filename);
+        Resource resource = new FileSystemResource(file);
 
-            if (!resource.exists()) {
-                return ResponseEntity.notFound().build();
-            }
-
-            // ✅ ตรวจสอบชนิดไฟล์จากนามสกุล
-            MediaType mediaType = getMediaTypeFromFilename(filename);
-
-            return ResponseEntity.ok()
-                    .contentType(mediaType)
-                    .body(resource);
-
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+        // ตรวจสอบประเภทไฟล์
+        String contentType = "image/jpeg";
+        if (filename.endsWith(".png")) {
+            contentType = "image/png";
+        } else if (filename.endsWith(".webp")) {
+            contentType = "image/webp";
         }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .body(resource);
     }
 
     // 🔹 ฟังก์ชันตรวจ MIME type จากนามสกุลไฟล์
