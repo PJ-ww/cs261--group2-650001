@@ -19,7 +19,7 @@ body, html {
     align-items: center;
     padding: 2rem 1rem;
     box-sizing: border-box;
-    background: radial-gradient(circle, #fce4e4, #f8c1c1);
+    background-color: #fffbef;
     position: relative;
 }
 
