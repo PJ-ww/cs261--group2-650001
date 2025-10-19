@@ -66,104 +66,103 @@
     </div>
 
     <script src="map-script.js"></script>
-    <script>
-        // ใช้ API Endpoint เดียวกับที่ระบุใน fetchAndDisplayDetails
-        const API_BASE_URL = 'http://localhost:8080/api/locations';
+<script>
+    // ใช้ API Endpoint เดียวกับที่ระบุใน fetchAndDisplayDetails
+    const API_BASE_URL = 'http://localhost:8080/api/locations';
 
-        async function fetchAndDisplayDetails() {
-            // ดึง shortName จาก URL (ใช้เป็น searchTerm)
-            const params = new URLSearchParams(window.location.search);
-            const searchTerm = params.get('shortName');
-        
-            const locationNameElement = document.getElementById('location-name');
+    async function fetchAndDisplayDetails() {
+        // ดึง shortName จาก URL (ใช้เป็น searchTerm)
+        const params = new URLSearchParams(window.location.search);
+        const searchTerm = params.get('shortName');
+    
+        const locationNameElement = document.getElementById('location-name');
 
-            if (!searchTerm) {
-                locationNameElement.textContent = 'กรุณาระบุสถานที่';
+        if (!searchTerm) {
+            locationNameElement.textContent = 'กรุณาระบุสถานที่';
+            return;
+        }
+    
+        locationNameElement.textContent = `กำลังโหลดข้อมูลสำหรับ ${searchTerm}...`;
+
+        try {
+            // 1. Fetch Data: เรียก API ด้วย searchTerm
+            const response = await fetch(`${API_BASE_URL}?search=${searchTerm}`); 
+
+            if (!response.ok) {
+                locationNameElement.textContent = `ไม่พบสถานที่ '${searchTerm}' ในระบบ`;
+                console.error(`Fetch failed with status: ${response.status}`);
                 return;
             }
         
-            locationNameElement.textContent = `กำลังโหลดข้อมูลสำหรับ ${searchTerm}...`;
-
-            try {
-                // 1. Fetch Data: เรียก API ด้วย searchTerm
-                const response = await fetch(`${API_BASE_URL}?search=${searchTerm}`); 
-
-                if (!response.ok) {
-                    locationNameElement.textContent = `ไม่พบสถานที่ '${searchTerm}' ในระบบ`;
-                    console.error(`Fetch failed with status: ${response.status}`);
-                    return;
-                }
-            
-                // รับค่ากลับมาเป็น List (Array) ของสถานที่
-                const locationList = await response.json(); 
-            
-                if (locationList.length === 0) {
-                    locationNameElement.textContent = `ไม่พบข้อมูลรายละเอียดสำหรับ ${searchTerm}`;
-                    return;
-                }
-
-                // 2. เลือกรายการแรกมาใช้งาน (ตาม Logic ของ map.html)
-                const locationDetails = locationList[0]; 
-            
-                // 3. เตรียมข้อมูล
-            
-                // สร้าง workingHours จาก openTime และ closeTime
-                const workingHours = (locationDetails.openTime && locationDetails.closeTime)
-                    ? `${locationDetails.openTime} - ${locationDetails.closeTime}`
-                    : 'N/A';
-                
-                // shortName: ใช้ name เป็น shortName ชั่วคราว (ตาม Logic ของ map.html)
-                const shortNameDisplay = locationDetails.name; 
-            
-                // กำหนด field ที่ใช้สำหรับคำอธิบายเพิ่มเติม (สมมติว่าเป็น field ชื่อ description)
-                const descriptionText = locationDetails.description || 'ไม่มีข้อมูลคำอธิบายเพิ่มเติม';
-
-
-                // 4. อัปเดต Element บนหน้าเว็บ
-            
-                // อัปเดต Title Bar
-                document.getElementById('detail-title').textContent = `${locationDetails.name} Details`;
-                // อัปเดตชื่อสถานที่
-                locationNameElement.textContent = `${locationDetails.name} (${searchTerm})`; 
-
-                // Logic สำหรับรูปภาพ
-                const locationImage = document.getElementById('location-image');
-                const placeholderIcon = document.getElementById('placeholder-icon');
-            
-				
-                // สมมติว่า field รูปภาพคือ imagePath (หรือ imageUrl)
-                if (locationDetails.imagePath) { 
-                    // ✅ ใช้ endpoint /api/images จาก backend ที่เราสร้างไว้
-                    locationImage.src = `http://localhost:8080/api/images/${locationDetails.imagePath}`;
-                    locationImage.style.display = 'block'; 
-                    placeholderIcon.style.display = 'none'; 
-                } else if (locationDetails.imageUrl) {
-                    // ✅ ถ้า backend มี URL อยู่แล้ว (เต็มๆ)
-                    locationImage.src = locationDetails.imageUrl;
-                    locationImage.style.display = 'block';
-                    placeholderIcon.style.display = 'none';
-                } else {
-                    // ✅ ไม่มีรูป → ใช้ icon แทน
-                    locationImage.style.display = 'none';
-                    placeholderIcon.style.display = 'block'; 
-                }
-
-                // อัปเดตเวลาทำการ (เนื่องจาก Backend ให้เวลามาเพียงชุดเดียว จึงใช้กับทั้ง weekday และ weekend)
-                document.getElementById('working-hours-weekday').textContent = workingHours;
-                document.getElementById('working-hours-weekend').textContent = workingHours;
-            
-                // อัปเดตคำอธิบายเพิ่มเติม
-                document.getElementById('full-description-text').textContent = descriptionText;
-            
-            } catch (error) {
-                console.error('Error fetching location data for details page:', error);
-                locationNameElement.textContent = `เกิดข้อผิดพลาดในการดึงข้อมูล: ${error.message}`;
+            // รับค่ากลับมาเป็น List (Array) ของสถานที่
+            const locationList = await response.json(); 
+        
+            if (locationList.length === 0) {
+                locationNameElement.textContent = `ไม่พบข้อมูลรายละเอียดสำหรับ ${searchTerm}`;
+                return;
             }
+
+            // 2. เลือกรายการแรกมาใช้งาน (ตาม Logic ของ map.html)
+            const locationDetails = locationList[0]; 
+        
+            // 3. เตรียมข้อมูล
+        
+            // สร้าง workingHours จาก openTime และ closeTime
+            const workingHours = (locationDetails.openTime && locationDetails.closeTime)
+                ? `${locationDetails.openTime} - ${locationDetails.closeTime}`
+                : 'N/A';
+            
+            // shortName: ใช้ name เป็น shortName ชั่วคราว (ตาม Logic ของ map.html)
+            const shortNameDisplay = locationDetails.name; 
+        
+            // กำหนด field ที่ใช้สำหรับคำอธิบายเพิ่มเติม (สมมติว่าเป็น field ชื่อ description)
+            const descriptionText = locationDetails.description || 'ไม่มีข้อมูลคำอธิบายเพิ่มเติม';
+
+
+            // 4. อัปเดต Element บนหน้าเว็บ
+        
+            // อัปเดต Title Bar
+            document.getElementById('detail-title').textContent = `${locationDetails.name} Details`;
+            // อัปเดตชื่อสถานที่
+            locationNameElement.textContent = `${locationDetails.name} (${searchTerm})`; 
+
+            // ✅ Logic สำหรับรูปภาพ (อัปเดตใหม่)
+            const locationImage = document.getElementById('location-image');
+            const placeholderIcon = document.getElementById('placeholder-icon');
+
+            const imageFilename = locationDetails.imagePath || locationDetails.imageUrl;
+
+            if (imageFilename) {
+                // ถ้า backend เก็บชื่อไฟล์ เช่น "temple.webp"
+                const imageUrl = imageFilename.startsWith('http')
+                    ? imageFilename // ถ้าเป็น URL เต็มอยู่แล้ว
+                    : `http://localhost:8080/images/${imageFilename}`; // ดึงจาก backend ของเรา
+
+                locationImage.src = imageUrl;
+                locationImage.style.display = 'block';
+                placeholderIcon.style.display = 'none';
+            } else {
+                locationImage.style.display = 'none';
+                placeholderIcon.style.display = 'block';
+            }
+
+            // อัปเดตเวลาทำการ
+            document.getElementById('working-hours-weekday').textContent = workingHours;
+            document.getElementById('working-hours-weekend').textContent = workingHours;
+        
+            // อัปเดตคำอธิบายเพิ่มเติม
+            document.getElementById('full-description-text').textContent = descriptionText;
+        
+        } catch (error) {
+            console.error('Error fetching location data for details page:', error);
+            locationNameElement.textContent = `เกิดข้อผิดพลาดในการดึงข้อมูล: ${error.message}`;
         }
-    
-        // เรียกใช้ฟังก์ชันเมื่อ DOM โหลดเสร็จ
-        document.addEventListener('DOMContentLoaded', fetchAndDisplayDetails);
-    </script>
+    }
+
+    // เรียกใช้ฟังก์ชันเมื่อ DOM โหลดเสร็จ
+    document.addEventListener('DOMContentLoaded', fetchAndDisplayDetails);
+</script>
+
 
     
 </body>
