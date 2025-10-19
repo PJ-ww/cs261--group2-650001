@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
+        body{font-family:'Sarabun',sans-serif;margin:0;background-color:#424242;display:flex;flex-direction:column;align-items:center;min-height:100vh;color:#333}
+        .dashboard-container{width:100%;max-width:1200px;margin:20px;padding-bottom:80px}
+        header{background-color:#b71c1c;color:#fff;padding:15px 20px;text-align:center;font-size:1.2em;font-weight:700;border-top-left-radius:8px;border-top-right-radius:8px}
+        main{background-color:#f5f5f5;padding:20px;border-bottom-left-radius:8px;border-bottom-right-radius:8px}
+        .actions-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+        .search-box input{padding:10px;border:1px solid #ccc;border-radius:5px;width:250px}
+        .add-button{background-color:#4caf50;color:#fff;padding:10px 15px;border:none;border-radius:5px;cursor:pointer;font-size:1em;text-decoration:none}
+        .add-button i{margin-right:5px}
+        .data-table{width:100%;border-collapse:collapse;background-color:#fff;box-shadow:0 2px 4px rgba(0,0,0,.1)}
+        .data-table td,.data-table th{padding:12px 15px;text-align:left;border-bottom:1px solid #ddd}
+        .data-table th{background-color:#e0e0e0;font-weight:700}
+        .data-table .actions-cell{position:relative;text-align:center}
+        .menu-icon{cursor:pointer;padding:5px;border-radius:50%}
+        .menu-icon:hover{background-color:#f0f0f0}
+        .dropdown-menu{display:none;position:absolute;right:25px;top:10px;background-color:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 8px rgba(0,0,0,.1);z-index:100;width:120px;overflow:hidden}
+        .dropdown-menu.show{display:block}
+        .dropdown-menu a{display:flex;align-items:center;gap:10px;padding:10px 15px;color:#333;text-decoration:none;font-size:.9em}
+        .dropdown-menu a:hover{background-color:#f5f5f5}
+        .dropdown-menu a .fa-trash-alt{color:#b71c1c}
+        .row-pending-deletion{background-color:#ffebee!important;transition:background-color .3s}
+        .confirm-btn{color:#fff!important;background-color:#d32f2f!important;font-weight:700}
+        footer{background-color:#fff;position:fixed;bottom:0;left:0;width:100%;display:flex;justify-content:space-around;align-items:center;padding:10px 0;box-shadow:0 -2px 5px rgba(0,0,0,.1)}
+        .nav-item{display:flex;flex-direction:column;align-items:center;color:#666;text-decoration:none;font-size:.8em}
+        .nav-item i{font-size:1.5em;margin-bottom:5px}
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header>Category Management</header>
+        <main>
+            <div class="actions-bar">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="ค้นหาหมวดหมู่">
+                </div>
+                <a href="add-category.html" class="add-button"><i class="fas fa-plus"></i> Add New Category</a>
+            </div>
+            <table class="data-table">
+				<thead>
+				  <tr>
+				    <th style="width: 10%;">ID</th>
+				    <th>Category</th>
+				    <th style="width: 15%; text-align:center;">Action</th>
+				  </tr>
+				</thead>
+                <tbody id="category-table-body"></tbody>
+            </table>
+        </main>
+    </div>
+    <footer>
+        <a href="/map.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="/admin/dashboard.html" class="nav-item active"><i class="fas fa-cog"></i><span>Admin Dashboard</span></a>
+        <a href="#" class="nav-item"><i class="fas fa-user"></i><span>Profile</span></a>
+    </footer>
+
+	<script src="category-script.js"></script>
+	
+	<script type="module">
+		  import { protectPage } from "/authGuard.js";
+		  protectPage(true); // 🧩 บังคับเฉพาะ admin
+		</script>
+
+
+
+</body>
+</html>

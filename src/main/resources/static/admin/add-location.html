@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Location - Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="add-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+    <div class="form-page-container">
+        <header>
+            <a href="dashboard.html" class="back-button"><i class="fas fa-chevron-left"></i></a>
+            <span id="page-title">Add Location</span>
+        </header>
+
+        <main>
+            <h2 id="form-title">เพิ่มสถานที่</h2>
+            <form class="add-location-form" id="locationForm">
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="location-name">ชื่อสถานที่</label>
+                        <input type="text" id="location-name" placeholder="ชื่อสถานที่" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="category">หมวดหมู่</label>
+                        <select id="category" required>
+    <option value="">-- เลือกหมวดหมู่สถานที่ --</option>
+    </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">รายละเอียด</label>
+                        <textarea id="description" rows="5" placeholder="รายละเอียดของสถานที่" required></textarea>
+                    </div>
+                    <div class="time-group">
+                        <div class="form-group">
+                            <label for="open-time">เวลาเปิด</label>
+                            <input type="text" id="open-time" class="time-picker" placeholder="--:--" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="close-time">เวลาปิด</label>
+                            <input type="text" id="close-time" class="time-picker" placeholder="--:--" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-column">
+                    <div class="form-group">
+                        <label>แผนที่ (คลิกเพื่อปักหมุด)</label>
+                        <div id="map-add-page"></div> 
+                    </div>
+                    <div class="form-group">
+                        <label for="latitude">พิกัด</label>
+                        <input type="text" id="latitude" placeholder="ละติจูด" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="longitude" placeholder="ลองจิจูด" required>
+                    </div>
+                    <div class="button-group">
+                        <button type="button" class="btn btn-cancel" onclick="window.location.href='dashboard.html'">ยกเลิก</button>
+                        <button type="submit" class="btn btn-save">บันทึก</button>
+                    </div>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <footer>
+        <a href="/map.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="/category.html" class="nav-item"><i class="fas fa-cog"></i><span>Change Category</span></a>
+        <a href="#" class="nav-item"><i class="fas fa-user"></i><span>Profile</span></a>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="add-script.js"></script>
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDXg9TGFh7rvgORmv5d-8rUJS8N1jrjPRE&callback=initAddMap&libraries=places"></script>
+    </body>
+</html>

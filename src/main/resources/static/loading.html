@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TU Compass</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+<body>
+
+    <div class="loading-screen">
+        
+        <div class="content-wrapper">
+            <img src="/image/icon.png" alt="TU Compass Logo" class="main-logo">
+            <div id="loader" class="loader"></div>
+        </div>
+        <img src="/image/TU.png" alt="Thammasat University Logo" class="footer-logo">
+
+        <div id="error-modal" class="modal-overlay">
+            <div class="modal-dialog">
+                <h2>Error</h2>
+                <p>No available network types.</p>
+                <button id="ok-button">OK</button>
+            </div>
+        </div>
+
+    </div>
+    <script src="script.js"></script>
+    
+</body>
+</html>

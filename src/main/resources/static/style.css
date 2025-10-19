@@ -1,0 +1,127 @@
+/* นำเข้า Google Fonts - Sarabun */
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
+
+/* ตั้งค่าพื้นฐาน */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Sarabun', sans-serif; /* ✅ เปลี่ยนจาก Kanit เป็น Sarabun */
+    overflow: hidden;
+}
+
+/* กล่องหลักที่คลุมทุกอย่าง */
+.loading-screen {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    padding: 2rem 1rem;
+    box-sizing: border-box;
+    background: radial-gradient(circle, #fce4e4, #f8c1c1);
+    position: relative;
+}
+
+.content-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    flex-grow: 1; 
+    justify-content: center; 
+}
+
+.main-logo {
+    width: 250px;
+}
+
+/* ตัวโหลดหมุนๆ (Spinner) */
+.loader {
+    border: 5px solid rgba(255, 255, 255, 0.5);
+    border-top: 5px solid #d9534f;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1.2s linear infinite;
+}
+
+.footer-logo {
+    width: 200px;
+    margin-top: auto;
+}
+
+/* ---------- ส่วนของ Error Dialog ---------- */
+
+/* พื้นหลังสีเทาโปร่งใส */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    display: none; /* ซ่อนไว้เป็นค่าเริ่มต้น */
+}
+
+/* กล่องข้อความ Dialog */
+.modal-dialog {
+    background-color: #f2eef2;
+    padding: 2rem;
+    border-radius: 20px;
+    text-align: center;
+    width: 80%;
+    max-width: 300px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.modal-dialog h2 {
+    color: #d9534f;
+    margin-top: 0;
+    font-size: 1.5rem;
+    font-family: 'Sarabun', sans-serif; /* ✅ เพิ่มเพื่อความสม่ำเสมอ */
+}
+
+.modal-dialog p {
+    color: #333;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+    font-family: 'Sarabun', sans-serif; /* ✅ เพิ่ม */
+}
+
+.modal-dialog button {
+    background-color: #ef8a8a;
+    color: white;
+    border: none;
+    padding: 0.8rem 2.5rem;
+    border-radius: 25px;
+    font-family: 'Sarabun', sans-serif; /* ✅ เปลี่ยนจาก Kanit */
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* คลาสสำหรับสั่งให้แสดง Modal */
+.modal-overlay.show {
+    display: flex;
+}
+
+/* Keyframes สำหรับอนิเมชันการหมุน */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ========== Responsive Design ========== */
+@media (min-width: 768px) {
+    .loading-screen {
+        max-width: 450px;
+        max-height: 850px; 
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin: auto; 
+    }
+}

@@ -2,27 +2,40 @@ package com.example.demo.controller;
 
 import com.example.demo.model.Place;
 import com.example.demo.service.PlaceService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
+import jakarta.validation.Valid;
 import java.util.List;
 
-@Controller
+@RestController
+@RequestMapping("/api/locations")
+@CrossOrigin(origins = "*")
 public class PlaceController {
 
-    @Autowired
-    private PlaceService service;
+    private final PlaceService placeService;
 
-    @ResponseBody
-    @GetMapping("/api/places")
-    public List<Place> getAllPlaces() {
-        return service.getAllPlaces();
+    public PlaceController(PlaceService placeService) {
+        this.placeService = placeService;
     }
 
-    @ResponseBody
-    @GetMapping("/api/places/search")
-    public List<Place> searchPlaces(@RequestParam String query) {
-        return service.searchPlaces(query);
+    // ✅ บังคับให้ส่ง JSON UTF-8 (แก้ปัญหา ???????)
+    @GetMapping(produces = "application/json; charset=UTF-8")
+    public List<Place> getAllPlaces(@RequestParam(required = false) String search) {
+        return placeService.searchPlaces(search);
+    }
+
+    @PostMapping(produces = "application/json; charset=UTF-8")
+    public Place addPlace(@Valid @RequestBody Place place) {
+        return placeService.addPlace(place);
+    }
+
+    @PutMapping(value = "/{id}", produces = "application/json; charset=UTF-8")
+    public Place updatePlace(@PathVariable Long id, @RequestBody Place place) {
+        return placeService.updatePlace(id, place);
+    }
+
+    @DeleteMapping("/{id}")
+    public String deletePlace(@PathVariable Long id) {
+        placeService.deletePlace(id);
+        return "ลบสถานที่เรียบร้อยแล้ว";
     }
 }
