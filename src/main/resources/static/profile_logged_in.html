@@ -39,18 +39,18 @@
     </div>
   </main>
 
-  <footer class="footer-nav">
+  <footer class="bottom-nav">
     <div class="nav-item" id="homeButton">
       <i class="fas fa-home"></i>
-      <span class="nav-label">Home</span>
+      <span>Home</span>
     </div>
     <div class="nav-item" id="favoriteButton">
       <i class="fas fa-bookmark"></i>
-      <span class="nav-label">Favorites</span>
+      <span>Change Category</span>
     </div>
-    <div class="nav-item active"id="profileButton">
+    <div class="nav-item active" id="profileButton">
       <i class="fas fa-user"></i>
-      <span class="nav-label">Profile</span>
+      <span>Profile</span>
     </div>
   </footer>
 
@@ -100,9 +100,9 @@
     });
 
     // ⭐ ปุ่ม Favorites 
-   // document.getElementById("favoriteButton").addEventListener("click", () => {
-     // window.location.href = "favorites.html"; 
-   // });
+	document.getElementById("Change Category").addEventListener("click", () => {
+	  window.location.href = "admin-map.html";
+	});
 
     // 👤 ปุ่ม Profile
     document.getElementById("profileButton").addEventListener("click", () => {
