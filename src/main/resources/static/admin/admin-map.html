@@ -43,7 +43,7 @@
                 <span>Change Category</span>
             </a>
 
-            <a href="../profile_logged_in.html" class="nav-item">
+            <a href="/admin/profile_logged_in.html" class="nav-item">
                 <i class="fa-solid fa-user"></i>
                 <span>Profile</span>
             </a>
@@ -55,6 +55,11 @@
     <script async
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDXg9TGFh7rvgORmv5d-8rUJS8N1jrjPRE&callback=initMap&libraries=places">
     </script>
+	
+	<script type="module">
+				  import { protectPage } from "/authGuard.js";
+				  protectPage(true); // 🧩 บังคับเฉพาะ admin
+	</script>
 
 </body>
 </html>

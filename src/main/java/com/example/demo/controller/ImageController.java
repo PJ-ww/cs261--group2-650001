@@ -1,4 +1,4 @@
-package com.example.project.controller;
+package com.example.demo.controller;
 
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
