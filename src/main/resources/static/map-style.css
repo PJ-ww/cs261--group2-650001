@@ -111,6 +111,7 @@ body, html {
     text-decoration: none;
     color: #888; 
     font-size: 0.8rem;
+    transition: all 0.2s ease;
 }
 .nav-item i {
     font-size: 1.5rem; 
@@ -119,7 +120,10 @@ body, html {
 .nav-item.active {
     color: #8B0000;
 }
-
+.nav-item:hover {
+  color: #8B0000;
+  transform: translateY(-2px);
+}
 /* Popup styling for map infowindows */
 .place-popup {
     padding: 5px;
