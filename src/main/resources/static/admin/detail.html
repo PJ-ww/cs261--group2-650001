@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="detail-title">Details</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+	<link rel="icon" type="image/png" href="/images/favicon.png">
+
+    <link rel="stylesheet" href="detail-style.css"> 
+</head>
+<body>
+    <div class="page-container">
+
+        <header class="top-bar">
+            <a href="map.html" class="back-link" onclick="history.back(); return false;">
+                 <i class="fas fa-arrow-left header-icon"></i>
+            </a>
+             Detail
+        </header>
+
+        <main class="detail-wrapper">
+            
+            <section class="media-column">
+                <div class="image-gallery">
+                    <div class="main-image">
+                        <img id="location-image" src="" alt="Location Image" class="location-image-display">
+                                             <i class="fa-solid fa-image placeholder-icon" id="placeholder-icon"></i>
+                    </div>
+                </div>
+            </section>
+
+            <section class="info-column">
+     
+                <div class="title-block">
+                    <h1 class="item-name" id="location-name">...</h1>
+                    <span class="location-pin-icon"><i class="fa-solid fa-location-dot"></i></span>
+                    <!--<span class="bookmark-icon"><i class="fa-regular fa-bookmark"></i></span>-->
+                </div>
+
+                <hr class="info-separator">
+
+                <!--<div class="density-status">
+                    <p><strong>สถานะปัจจุบัน:</strong></p>
+                    <div class="density-level-box" id="density-status-box">...</div>
+                </div>-->
+
+                <div class="description-block">
+                    <h2>เวลาเปิด-ปิดทำการ</h2>
+                    <div class="schedule-detail">
+                        <p class="schedule-item">จันทร์ - ศุกร์ : <span class="time-slot" id="working-hours-weekday">...</span></p>
+                        <p class="schedule-item">เสาร์ - อาทิตย์ : <span class="time-slot closed" id="working-hours-weekend">...</span></p>
+                    </div>
+  
+                    <h2 class="full-description-title">คำอธิบายเพิ่มเติม</h2>
+                    <p class="full-description-text" id="full-description-text">...</p>
+                </div>
+     
+                <button class="cta-button">ดูแผนที่และนำทาง</button>
+
+            </section>
+        </main>
+    </div>
+
+    <script src="map-script.js"></script>
+	<script type="module">
+				  import { protectPage } from "/authGuard.js";
+				  protectPage(true); // 🧩 บังคับเฉพาะ admin
+		</script>
+<script>
+    // ใช้ API Endpoint เดียวกับที่ระบุใน fetchAndDisplayDetails
+    const API_BASE_URL = 'http://localhost:8080/api/locations';
+
+    async function fetchAndDisplayDetails() {
+        // ดึง shortName จาก URL (ใช้เป็น searchTerm)
+        const params = new URLSearchParams(window.location.search);
+        const searchTerm = params.get('shortName');
+    
+        const locationNameElement = document.getElementById('location-name');
+
+        if (!searchTerm) {
+            locationNameElement.textContent = 'กรุณาระบุสถานที่';
+            return;
+        }
+    
+        locationNameElement.textContent = `กำลังโหลดข้อมูลสำหรับ ${searchTerm}...`;
+
+        try {
+            // 1. Fetch Data: เรียก API ด้วย searchTerm
+            const response = await fetch(`${API_BASE_URL}?search=${searchTerm}`); 
+
+            if (!response.ok) {
+                locationNameElement.textContent = `ไม่พบสถานที่ '${searchTerm}' ในระบบ`;
+                console.error(`Fetch failed with status: ${response.status}`);
+                return;
+            }
+        
+            // รับค่ากลับมาเป็น List (Array) ของสถานที่
+            const locationList = await response.json(); 
+        
+            if (locationList.length === 0) {
+                locationNameElement.textContent = `ไม่พบข้อมูลรายละเอียดสำหรับ ${searchTerm}`;
+                return;
+            }
+
+            // 2. เลือกรายการแรกมาใช้งาน (ตาม Logic ของ map.html)
+            const locationDetails = locationList[0]; 
+        
+            // 3. เตรียมข้อมูล
+        
+            // สร้าง workingHours จาก openTime และ closeTime
+            const workingHours = (locationDetails.openTime && locationDetails.closeTime)
+                ? `${locationDetails.openTime} - ${locationDetails.closeTime}`
+                : 'N/A';
+            
+            // shortName: ใช้ name เป็น shortName ชั่วคราว (ตาม Logic ของ map.html)
+            const shortNameDisplay = locationDetails.name; 
+        
+            // กำหนด field ที่ใช้สำหรับคำอธิบายเพิ่มเติม (สมมติว่าเป็น field ชื่อ description)
+            const descriptionText = locationDetails.description || 'ไม่มีข้อมูลคำอธิบายเพิ่มเติม';
+
+
+            // 4. อัปเดต Element บนหน้าเว็บ
+        
+            // อัปเดต Title Bar
+            document.getElementById('detail-title').textContent = `${locationDetails.name} Details`;
+            // อัปเดตชื่อสถานที่
+            locationNameElement.textContent = `${locationDetails.name} (${searchTerm})`; 
+
+            // ✅ Logic สำหรับรูปภาพ (อัปเดตใหม่)
+            const locationImage = document.getElementById('location-image');
+            const placeholderIcon = document.getElementById('placeholder-icon');
+
+            const imageFilename = locationDetails.imagePath || locationDetails.imageUrl;
+
+            if (imageFilename) {
+                // ถ้า backend เก็บชื่อไฟล์ เช่น "temple.webp"
+                const imageUrl = imageFilename.startsWith('http')
+                    ? imageFilename // ถ้าเป็น URL เต็มอยู่แล้ว
+                    : `http://localhost:8080/images/${imageFilename}`; // ดึงจาก backend ของเรา
+
+                locationImage.src = imageUrl;
+                locationImage.style.display = 'block';
+                placeholderIcon.style.display = 'none';
+            } else {
+                locationImage.style.display = 'none';
+                placeholderIcon.style.display = 'block';
+            }
+
+            // อัปเดตเวลาทำการ
+            document.getElementById('working-hours-weekday').textContent = workingHours;
+            document.getElementById('working-hours-weekend').textContent = workingHours;
+        
+            // อัปเดตคำอธิบายเพิ่มเติม
+            document.getElementById('full-description-text').textContent = descriptionText;
+        
+        } catch (error) {
+            console.error('Error fetching location data for details page:', error);
+            locationNameElement.textContent = `เกิดข้อผิดพลาดในการดึงข้อมูล: ${error.message}`;
+        }
+    }
+
+    // เรียกใช้ฟังก์ชันเมื่อ DOM โหลดเสร็จ
+    document.addEventListener('DOMContentLoaded', fetchAndDisplayDetails);
+</script>
+
+
+    
+</body>
+</html>

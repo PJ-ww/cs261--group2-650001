@@ -5,7 +5,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.example.demo.controller.DataSeeder;
+import com.example.demo.config.DataSeeder;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
