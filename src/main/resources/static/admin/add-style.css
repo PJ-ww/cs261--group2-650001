@@ -132,18 +132,6 @@ main h2 {
     color: white;
 }
 
-footer {
-    background-color: white;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 10px 0;
-    box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-}
 
 .nav-item {
     display: flex;
@@ -156,8 +144,8 @@ footer {
 }
 
 .nav-item i {
-    font-size: 1.5em;
-    margin-bottom: 5px;
+  font-size: 22px;
+  margin-bottom: 3px;
 }
 .nav-item:hover {
   color: #8B0000;

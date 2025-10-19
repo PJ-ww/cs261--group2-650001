@@ -28,10 +28,46 @@
         .dropdown-menu a .fa-trash-alt{color:#b71c1c}
         .row-pending-deletion{background-color:#ffebee!important;transition:background-color .3s}
         .confirm-btn{color:#fff!important;background-color:#d32f2f!important;font-weight:700}
-        footer{background-color:#fff;position:fixed;bottom:0;left:0;width:100%;display:flex;justify-content:space-around;align-items:center;padding:10px 0;box-shadow:0 -2px 5px rgba(0,0,0,.1)}
-        .nav-item{display:flex;flex-direction:column;align-items:center;color:#666;text-decoration:none;font-size:.8em;transition: all 0.2s ease;}
-        .nav-item i{font-size:1.5em;margin-bottom:5px}
-        .nav-item:hover {color: #8B0000;transform: translateY(-2px);}
+		.bottom-nav {
+		  position: fixed; /* ติดล่างตลอด */
+		  bottom: 0;
+		  left: 0;
+		  width: 100%;
+		  height: 65px;
+		  background-color: #fff;
+		  border-top: 1px solid #ccc;
+		  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+		  display: flex;
+		  justify-content: space-around;
+		  align-items: center;
+		  z-index: 100;
+		}
+
+		.nav-item {
+		  display: flex;
+		  flex-direction: column;
+		  align-items: center;
+		  justify-content: center;
+		  text-decoration: none;
+		  color: #666;
+		  font-size: 13px;
+		  transition: all 0.2s ease;
+		}
+
+		.nav-item i {
+		  font-size: 22px;
+		  margin-bottom: 3px;
+		}
+
+		.nav-item.active {
+		  color: #801d1d;
+		  font-weight: bold;
+		}
+
+		.nav-item:hover {
+		  color: #801d1d;
+		  transform: translateY(-2px);
+		}
     </style>
 </head>
 <body>
@@ -56,11 +92,11 @@
             </table>
         </main>
     </div>
-    <footer>
+		<div class="bottom-nav">
         <a href="admin-map.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
         <a href="dashboard.html" class="nav-item active"><i class="fas fa-cog"></i><span>Change Category</span></a>
         <a href="/admin/profile_logged_in.html" class="nav-item"><i class="fas fa-user"></i><span>Profile</span></a>
-    </footer>
+		</div>
 
 	<script src="category-script.js"></script>
 	
