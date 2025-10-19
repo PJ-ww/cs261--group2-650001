@@ -5,11 +5,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-<<<<<<< HEAD
 import com.example.demo.config.DataSeeder;
-=======
+
 // import com.example.demo.controller.DataSeeder; // ไม่จำเป็นต้องใช้ใน ImageController
->>>>>>> 49fe5d82a50b424cd5d066935744de9d5eb68c2e
+
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
