@@ -38,4 +38,11 @@ public class AdminController {
     public String redirectToDashboard() {
         return "redirect:/admin/dashboard";
     }
+    
+    @GetMapping("/admin-map")
+    public String adminMap(Model model) {
+        model.addAttribute("pageTitle", "Admin Map");
+        return "admin/admin-map"; // ไปที่ templates/admin/admin-map.html
+    }
+
 }
