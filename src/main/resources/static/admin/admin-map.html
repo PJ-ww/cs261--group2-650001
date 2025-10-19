@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TU Compass Map</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <link rel="stylesheet" href="../map-style.css">
+     
+</head>
+<body>
+
+    <div class="map-container">
+        <div id="map"></div>
+
+        <div class="top-bar">
+            TU COMPASS
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Search">
+            <button class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>  
+        </div>
+
+        <div class="side-controls">
+            <button id="my-location-btn"><i class="fa-solid fa-location-crosshairs"></i></button>
+        </div>
+
+        
+        <div class="bottom-nav">
+            <a href="admin-map.html" class="nav-item active">
+                <i class="fa-solid fa-house"></i>
+                <span>Home</span>
+            </a>
+
+            <a href="category.html" class="nav-item">
+                <i class="fa-solid fa-gear"></i>
+                <span>Change Category</span>
+            </a>
+
+            <a href="../profile_logged_in.html" class="nav-item">
+                <i class="fa-solid fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+
+    </div>
+
+    <script src="../map-script.js"></script>
+    <script async
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDXg9TGFh7rvgORmv5d-8rUJS8N1jrjPRE&callback=initMap&libraries=places">
+    </script>
+
+</body>
+</html>
