@@ -128,21 +128,25 @@
 
             // ✅ Logic สำหรับรูปภาพ (อัปเดตใหม่)
             
-    const locationImage = document.getElementById('location-image');
-    const placeholderIcon = document.getElementById('placeholder-icon');
+			// ✅ Logic สำหรับรูปภาพ (อัปเดตใหม่)
+			           const locationImage = document.getElementById('location-image');
+			           const placeholderIcon = document.getElementById('placeholder-icon');
 
-    if (locationDetails.imagePath) {
-        locationImage.src = `http://localhost:8080/api/images/${locationDetails.imagePath}`;
-        locationImage.style.display = 'block';
-        placeholderIcon.style.display = 'none';
-    } else if (locationDetails.imageUrl) {
-        locationImage.src = locationDetails.imageUrl;
-        locationImage.style.display = 'block';
-        placeholderIcon.style.display = 'none';
-    } else {
-        locationImage.style.display = 'none';
-        placeholderIcon.style.display = 'block';
-    }
+			           const imageFilename = locationDetails.imagePath || locationDetails.imageUrl;
+
+			           if (imageFilename) {
+			               // ถ้า backend เก็บชื่อไฟล์ เช่น "temple.webp"
+			               const imageUrl = imageFilename.startsWith('http')
+			                   ? imageFilename // ถ้าเป็น URL เต็มอยู่แล้ว
+			                   : `http://localhost:8080/images/${imageFilename}`; // ดึงจาก backend ของเรา
+
+			               locationImage.src = imageUrl;
+			               locationImage.style.display = 'block';
+			               placeholderIcon.style.display = 'none';
+			           } else {
+			               locationImage.style.display = 'none';
+			               placeholderIcon.style.display = 'block';
+			           }
             // อัปเดตเวลาทำการ
             document.getElementById('working-hours-weekday').textContent = workingHours;
             document.getElementById('working-hours-weekend').textContent = workingHours;
