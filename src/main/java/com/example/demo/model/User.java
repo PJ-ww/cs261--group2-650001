@@ -1,4 +1,7 @@
 package com.example.demo.model;
+/*kim */
+import java.util.HashSet;
+import java.util.Set;
 
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,6 +25,14 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     private Role role;
+    /*kim */
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "user_bookmarks", // ชื่อตารางใหม่ที่จะสร้าง
+        joinColumns = @JoinColumn(name = "user_id"), // คอลัมน์สำหรับ User
+        inverseJoinColumns = @JoinColumn(name = "place_id") // คอลัมน์สำหรับ Place
+    )
+    private Set<Place> bookmarks = new HashSet<>();
 
     public Long getId() { return id; }
     public String getStudentId() { return studentId; }
