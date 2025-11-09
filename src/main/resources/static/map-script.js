@@ -71,7 +71,7 @@ async function initMap() {
     try {
 
             // =========================================================
-            // ปรับปรุง: ใช้ MOCK DATA แทนการเรียก Fetch API
+            // การเรียก Fetch API
             // =========================================================
 
  
@@ -80,8 +80,6 @@ async function initMap() {
                 throw new Error(`HTTP error! สถานะ: ${response.status}`);
             }
             const locations = await response.json();
-
-            //const locations = MOCK_LOCATIONS_DATA; // <<< ใช้ข้อมูลจำลอง
         
             locations.forEach(location => {
             
@@ -97,71 +95,52 @@ async function initMap() {
                 // =========================================================
 
                 marker.addListener('click', () => {
+    
+                // 1. สร้างเนื้อหา HTML สำหรับ Popup
+                const content = `
+                <div class="place-popup">
+                    <h4>${location.name} (${location.description})</h4>
+                    <p>
+                        เวลาทำการ: 
+                        ${(location.openTime?.trim() && location.closeTime?.trim()) 
+                        ? `${location.openTime} - ${location.closeTime}` 
+                        : 'N/A'}
+                    </p>
+                    <p>สถานะความหนาแน่น: <b>${location.densityStatus || 'N/A'}</b></p>
             
-                    // 1. สร้างเนื้อหา HTML สำหรับ Popup (ใช้ข้อมูลจาก Mock Data)
-                    const content = `
-                        <div class="place-popup">
-                            <h4>${location.name} (${location.description})</h4>
-							<p>
-							  เวลาทำการ: 
-							  ${(location.openTime?.trim() && location.closeTime?.trim()) 
-							    ? `${location.openTime} - ${location.closeTime}` 
-							    : 'N/A'}
-							</p>
-                            <p>สถานะความหนาแน่น: <b>${location.densityStatus || 'N/A'}</b></p>
-                    
-							<a href="detail.html?shortName=${encodeURIComponent(location.name)}" class="details-btn">
-							    ดูรายละเอียด
-							</a>
-                        </div>
-                    `;
-            
-                    // 2. ตั้งค่าเนื้อหาและเปิด Popup ที่ Marker ที่ถูกคลิก
-                    infoWindow.setContent(content);
-                    infoWindow.open(map, marker);
+                    <div class="popup-actions"> 
+                        <button class="bookmark-btn" data-name="${location.name}">
+                            📌 บุ๊กมาร์ก
+                        </button>
+                        <a href="detail.html?shortName=${encodeURIComponent(location.name)}" class="details-btn">
+                            ดูรายละเอียด
+                        </a>
+                    </div>
+                </div>
+                `;
+    
+                // 2. ตั้งค่าเนื้อหาและเปิด Popup ที่ Marker ที่ถูกคลิก
+                infoWindow.setContent(content);
+                infoWindow.open(map, marker);
+    
+                // 3. (เพิ่มเติม) ต้องเพิ่ม Listener สำหรับปุ่ม Bookmark
+                // เนื่องจากปุ่มถูกสร้างขึ้นมาใหม่เมื่อคลิก Marker
+                // คุณจะต้องดึงปุ่มและเพิ่ม Event Listener ที่นี่:
+                google.maps.event.addListener(infoWindow, 'domready', () => {
+                    const bookmarkBtn = infoWindow.getContent().querySelector('.bookmark-btn');
+                    if (bookmarkBtn) {
+                        bookmarkBtn.addEventListener('click', () => {
+                            const placeName = bookmarkBtn.getAttribute('data-name');
+                            alert(`กำลังเพิ่ม "${placeName}" เข้าสู่รายการบุ๊กมาร์ก!`);
+                            // **TODO:** เพิ่มโค้ดจริงสำหรับการบันทึกบุ๊กมาร์กที่นี่ (เช่น localStorage)
+                            // ตัวอย่าง: saveBookmark(placeName);
+                            // อาจเปลี่ยนข้อความปุ่มเป็น "บุ๊กมาร์กแล้ว" ด้วย
+                            bookmarkBtn.textContent = '✅ บุ๊กมาร์กแล้ว';
+                        });
+                    }
                 });
-
-                /*
-                marker.addListener('click', () => {
-            
-                    // 1. สร้างเนื้อหา HTML สำหรับ Popup (ใช้ข้อมูลที่มีอยู่แล้ว)
-                    const content = `
-                        <div class="place-popup">
-                            <h4>${location.name}</h4>
-                            <p>รหัสย่อ: <b>${location.shortName}</b></p>
-                            <p>สถานะความหนาแน่น: ${location.densityStatus || 'N/A'}</p>
-                            <button class="details-btn" 
-                                    data-shortname="${location.shortName}"
-                                    onclick="fetchAndDisplayDetails(this.getAttribute('data-shortname')); infoWindow.close();">
-                                ดูรายละเอียด (Task 3.5)
-                            </button>
-                        </div>
-                    `;
-            
-                    // 2. ตั้งค่าเนื้อหาและเปิด Popup ที่ Marker ที่ถูกคลิก
-                    infoWindow.setContent(content);
-                    infoWindow.open(map, marker);
-                });
-                */
-        
-            });
-
-            // ผูก Event Click สำหรับ Task ถัดไป
-            /*
-            marker.addListener('click', () => {
-                // เรียกฟังก์ชันแสดงรายละเอียด (ใช้ shortName ในการค้นหาใน Backend)
-                fetchAndDisplayDetails(location.shortName); 
-            });
-            
-            // (Optional: แสดงชื่อย่อ/ความหนาแน่นใน Infowindow เมื่อวางเม้าส์)
-            const infoWindow = new google.maps.InfoWindow({
-                content: `<b>${location.shortName}</b><br>ความหนาแน่น: ${location.densityStatus || 'N/A'}`
-            });
-            //marker.addListener('mouseover', () => infoWindow.open(map, marker));
-            //marker.addListener('mouseout', () => infoWindow.close());
-            */
-
-         
+            });   
+        });       
     }
     catch (error) {
         console.error('Error fetching locations:', error);
@@ -262,64 +241,6 @@ function setupMapControls() {
     }
 } 
 
-
-/**
- * ค้นหารายละเอียดสถานที่จาก Mock Data และแสดงผลบนแผนที่ (Task 3.5 และ U4)
- * @param {string} searchTerm - ชื่อสถานที่ย่อ (shortName) ที่ใช้ค้นหา
- */
-/*
-async function fetchAndDisplayDetails(searchTerm) {
-    console.log("Detail request initiated for:", searchTerm);
-    
-    // ค้นหาสถานที่จาก Mock Data
-    const locationDetails = MOCK_LOCATIONS_DATA.find(loc => 
-        loc.shortName.toLowerCase() === searchTerm.toLowerCase()
-    );
-    
-    if (!locationDetails) {
-        alert(`ไม่พบสถานที่ '${searchTerm}' ในข้อมูลจำลอง`);
-        return;
-    }
-
-    const position = { 
-        lat: locationDetails.latitude, 
-        lng: locationDetails.longitude 
-    };
-
-    // 1. Move Map: ขยับแผนที่และซูมไปยังตำแหน่งที่ค้นพบ
-    map.setCenter(position);
-    map.setZoom(17); 
-    
-    // 2. Display Popup: สร้าง Marker ชั่วคราวและเปิด Popup
-    
-    const content = `
-        <div class="place-popup">
-            <h4>${locationDetails.name} (${locationDetails.shortName})</h4>
-            <p>เวลาทำการ: ${locationDetails.workingHours || 'N/A'}</p> 
-            <p>สถานะความหนาแน่น: <b>${locationDetails.densityStatus || 'N/A'}</b></p>
-            
-            <a href="detail.html?shortName=${locationDetails.shortName}" class="details-btn">
-                ดูรายละเอียด 
-            </a>
-        </div>               
-    `;
-
-   // 3. เปิด Popup ที่ตำแหน่งนั้น
-    infoWindow.setContent(content);
-    // สร้าง Marker ชั่วคราวเพื่อใช้เปิด infoWindow (หากไม่มี Marker ของสถานที่นั้นอยู่แล้ว)
-    const tempMarker = new google.maps.Marker({
-        position: position,
-        map: map,
-        title: locationDetails.name
-    });
-
-    infoWindow.open(map, tempMarker);
-    
-    // ลบ Marker ชั่วคราวเมื่อ Pop-up ถูกปิด เพื่อไม่ให้มี Marker ซ้ำซ้อน
-    google.maps.event.addListener(infoWindow, 'closeclick', function() {
-        tempMarker.setMap(null); 
-    });
-}*/
 
 
 // เชิ่อมกับbackend

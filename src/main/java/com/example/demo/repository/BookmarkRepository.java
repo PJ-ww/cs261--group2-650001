@@ -6,4 +6,7 @@ import java.util.Optional;
 
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     Optional<Bookmark> findByUserIdAndTargetIdAndTargetType(Long userId, Long targetId, String targetType);
+
+    // **NEW: สำหรับการลบ (Unbookmark)**
+    void deleteByUserIdAndTargetIdAndTargetType(Long userId, Long targetId, String targetType);
 }
