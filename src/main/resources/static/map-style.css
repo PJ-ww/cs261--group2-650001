@@ -131,11 +131,12 @@ body, html {
   color: #801d1d;
   transform: translateY(-2px);
 }
+
 /* Popup styling for map infowindows */
 .place-popup {
     padding: 5px;
     max-width: 250px;
-    font-family: 'Sarabun', sans-serif;  /* ✅ เปลี่ยนตรงนี้ด้วย */
+    font-family: 'Sarabun', sans-serif;
 }
 
 /* หัวข้อ (ชื่อสถานที่) */
@@ -151,19 +152,45 @@ body, html {
     font-size: 0.9em;
 }
 
-/* Styling สำหรับปุ่มดูรายละเอียด */
-.details-btn {
-    display: block;
-    width: 100%;
-    padding: 6px;
+/* ภาชนะสำหรับจัดกลุ่มปุ่ม */
+.popup-actions {
+    display: flex; /* ใช้ Flexbox เพื่อจัดเรียงปุ่ม */
+    gap: 8px;      /* ระยะห่างระหว่างปุ่ม */
     margin-top: 10px;
-    background-color: #e62d2d;
-    color: white;
+}
+
+/* สไตล์พื้นฐานของปุ่มทั้งหมด */
+.details-btn, .bookmark-btn {
+    padding: 6px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-weight: 700;
     transition: background-color 0.2s;
+    text-align: center;
+    flex-grow: 1; /* ทำให้ปุ่มขยายเต็มพื้นที่ที่เหลือ */
+    text-decoration: none; /* สำหรับ details-btn ที่เป็น <a> */
+    font-size: 0.9em;
+}
+
+/* Styling สำหรับปุ่มดูรายละเอียด (เดิม) */
+.details-btn {
+    background-color: #e62d2d;
+    color: white;
+}
+
+.details-btn:hover {
+    background-color: #d12727;
+}
+
+/* Styling สำหรับปุ่มบุ๊กมาร์ก (ใหม่) */
+.bookmark-btn {
+    background-color: #3498db; /* สีน้ำเงินสำหรับบุ๊กมาร์ก */
+    color: white;
+}
+
+.bookmark-btn:hover {
+    background-color: #2980b9;
 }
 
 .details-btn:hover {

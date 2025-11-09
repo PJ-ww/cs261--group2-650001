@@ -4,6 +4,7 @@ import com.example.demo.model.Bookmark;
 import com.example.demo.repository.BookmarkRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // Import เพิ่มเติม
 
 @Service
 public class BookmarkService {
