@@ -8,11 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import com.example.demo.config.DataSeeder;
 
 // import com.example.demo.controller.DataSeeder; // ไม่จำเป็นต้องใช้ใน ImageController
-<<<<<<< HEAD
->>>>>>> 49fe5d8 (link database)
-=======
-
->>>>>>> 6c7e283 (edit open deatail on marker from undefine to val)
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

@@ -15,13 +15,9 @@ document.addEventListener('DOMContentLoaded', function () {
   async function loadLocations(searchTerm = '') {
     try {
       const url = searchTerm ? `${API_URL}?search=${encodeURIComponent(searchTerm)}` : API_URL;
-<<<<<<< HEAD
       const response = await fetch(url, {
         headers: { 'Accept': 'application/json; charset=UTF-8' } // ✅ บังคับ UTF-8
       });
-=======
-      const response = await fetch(url);
->>>>>>> d747325 (Resolve merge conflict)
       if (!response.ok) throw new Error('โหลดข้อมูลไม่สำเร็จ');
       const data = await response.json();
 
@@ -53,7 +49,6 @@ document.addEventListener('DOMContentLoaded', function () {
     paginatedData.forEach((location, index) => {
       const row = document.createElement('tr');
       row.setAttribute('data-id', location.id);
-<<<<<<< HEAD
 
       // ✅ รองรับการเข้าถึง category ได้หลายรูปแบบ
       const categoryText =
@@ -105,43 +100,6 @@ document.addEventListener('DOMContentLoaded', function () {
     };
     paginationWrapper.appendChild(prevButton);
 
-=======
-      row.innerHTML = `
-        <td>${start + index + 1}</td>
-        <td>${location.name || '-'}</td>
-        <td>${location.category?.name || location.category || '-'}</td>
-        <td>${location.description || '-'}</td>
-        <td>${location.opentime || '-'}</td>
-        <td>${location.closetime || '-'}</td>
-        <td>${location.latitude || '-'}</td>
-        <td>${location.longitude || '-'}</td>
-        <td class="actions-cell">
-          <i class="fas fa-ellipsis-v menu-icon"></i>
-          <div class="dropdown-menu">
-            <a href="add-location.html?edit=${location.id}" class="edit-btn"><i class="fas fa-pencil-alt"></i> Edit</a>
-            <a href="#" class="delete-btn"><i class="fas fa-trash-alt"></i> Delete</a>
-          </div>
-        </td>
-      `;
-      tableBody.appendChild(row);
-    });
-  }
-
-  // --- Pagination ---
-  function setupPagination(dataToRender) {
-    paginationWrapper.innerHTML = '';
-    const pageCount = Math.ceil(dataToRender.length / rowsPerPage);
-
-    const prevButton = document.createElement('button');
-    prevButton.innerHTML = '&laquo;';
-    prevButton.disabled = currentPage === 1;
-    prevButton.onclick = () => {
-      renderTable(currentData, currentPage - 1);
-      setupPagination(currentData);
-    };
-    paginationWrapper.appendChild(prevButton);
-
->>>>>>> d747325 (Resolve merge conflict)
     for (let i = 1; i <= pageCount; i++) {
       const btn = document.createElement('button');
       btn.innerText = i;
@@ -173,14 +131,8 @@ document.addEventListener('DOMContentLoaded', function () {
   tableBody.addEventListener('click', function (event) {
     const target = event.target;
 
-<<<<<<< HEAD
     if (target.classList.contains('menu-icon')) {
       event.stopPropagation();
-=======
-    // ถ้าคลิกที่จุดสามจุด
-    if (target.classList.contains('menu-icon')) {
-      event.stopPropagation(); // ✅ ป้องกันเมนูปิดเอง
->>>>>>> d747325 (Resolve merge conflict)
       document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
         if (menu !== target.nextElementSibling) menu.classList.remove('show');
       });
@@ -189,10 +141,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-<<<<<<< HEAD
-=======
-  // ปิด dropdown ถ้าคลิกนอก cell
->>>>>>> d747325 (Resolve merge conflict)
   window.addEventListener('click', function (event) {
     if (!event.target.closest('.actions-cell')) {
       document.querySelectorAll('.dropdown-menu.show')
@@ -220,10 +168,6 @@ document.addEventListener('DOMContentLoaded', function () {
         alert('ไม่สามารถลบข้อมูลได้');
       }
     } else {
-<<<<<<< HEAD
-=======
-      // กดครั้งแรก = แสดง Confirm?
->>>>>>> d747325 (Resolve merge conflict)
       if (rowToDelete) {
         rowToDelete.classList.remove('row-pending-deletion');
         const oldBtn = rowToDelete.querySelector('.delete-btn');
