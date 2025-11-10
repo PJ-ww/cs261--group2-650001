@@ -33,6 +33,9 @@ public class User implements UserDetails {
         inverseJoinColumns = @JoinColumn(name = "place_id") // คอลัมน์สำหรับ Place
     )
     private Set<Place> bookmarks = new HashSet<>();
+    //ให้รับรู้ว่า User 1 คน สามารถมีประวัติตำแหน่ง (UserLocation) ได้หลายอัน kim
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<UserLocation> locations = new HashSet<>();
 
     public Long getId() { return id; }
     public String getStudentId() { return studentId; }
