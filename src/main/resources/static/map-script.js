@@ -3,6 +3,8 @@ let userLocation = null;
 let userMarker = null;
 let accuracyCircle = null;
 let infoWindow = null;
+let directionsService;
+let directionsRenderer;
 
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -23,6 +25,11 @@ async function initMap() {
 
      // สร้าง InfoWindow Object ไว้ใช้ซ้ำ
     infoWindow = new google.maps.InfoWindow();
+
+     // เริ่มต้น Directions Service และ Renderer
+    directionsService = new google.maps.DirectionsService();
+    directionsRenderer = new google.maps.DirectionsRenderer();
+    directionsRenderer.setMap(map); // บอก Renderer ว่าจะวาดเส้นทางบนแผนที่ 'map'
 
     // ส่วนติดตามตำแหน่งผู้ใช้ (Real-time Geolocation) 
     if (navigator.geolocation) {
@@ -116,11 +123,28 @@ async function initMap() {
                             ดูรายละเอียด
                         </a>
                     </div>
+                    <button class="directions-btn" 
+                            data-lat="${location.latitude}" 
+                            data-lng="${location.longitude}">
+                            <i class="fa-solid fa-person-walking"></i> นำทาง (เดิน)
+                    </button>
                 </div>
                 `;
     
                 // 2. ตั้งค่าเนื้อหาและเปิด Popup ที่ Marker ที่ถูกคลิก
                 infoWindow.setContent(content);
+
+                google.maps.event.addListener(infoWindow, 'domready', () => {
+                    const directionsBtn = document.querySelector('.directions-btn');
+                    if (directionsBtn) {
+                      directionsBtn.onclick = () => {
+                          const lat = parseFloat(directionsBtn.getAttribute('data-lat'));
+                          const lng = parseFloat(directionsBtn.getAttribute('data-lng'));
+                          calculateAndDisplayRoute({ lat: lat, lng: lng });
+                      };
+                    }
+                    });
+
                 infoWindow.open(map, marker);
     
                 // 3. (เพิ่มเติม) ต้องเพิ่ม Listener สำหรับปุ่ม Bookmark
@@ -306,6 +330,12 @@ async function fetchAndDisplayDetails(searchTerm) {
             <a href="detail.html?shortName=${encodeURIComponent(shortName)}" class="details-btn">
                 ดูรายละเอียด 
             </a>
+
+            <button class="directions-btn" 
+            data-lat="${locationDetails.latitude}" 
+            data-lng="${locationDetails.longitude}">
+            <i class="fa-solid fa-person-walking"></i> นำทาง (เดิน)
+            </button>
         </div> 
         `;
         // <p>สถานะความหนาแน่น: <b>${locationDetails.densityStatus || 'N/A'}</b></p>
@@ -318,6 +348,18 @@ async function fetchAndDisplayDetails(searchTerm) {
 
         // เปิด Popup ที่ตำแหน่ง Marker ชั่วคราว
         infoWindow.setContent(content);
+
+         google.maps.event.addListener(infoWindow, 'domready', () => {
+            const directionsBtn = document.querySelector('.directions-btn');
+            if (directionsBtn) {
+            directionsBtn.onclick = () => {
+            const lat = parseFloat(directionsBtn.getAttribute('data-lat'));
+            const lng = parseFloat(directionsBtn.getAttribute('data-lng'));
+            calculateAndDisplayRoute({ lat: lat, lng: lng });
+            };
+            }
+        });
+
         infoWindow.open(map, tempMarker);
 
         // (***สำคัญ: อาจต้องลบ Marker ชั่วคราวออกเมื่อ Popup ปิด หากคุณไม่ต้องการให้มี Marker ซ้ำซ้อน***)
@@ -380,3 +422,70 @@ async function fetchAndDisplayDetails(searchTerm) {
         imagePath: "/image/โดม.jpg" 
     }
 ];*/
+
+/**
+ * คำนวณและแสดงเส้นทางจากตำแหน่งผู้ใช้ไปยังปลายทาง
+ * @param {object} destination - { lat: number, lng: number }
+ */
+function calculateAndDisplayRoute(destination) {
+    // 1. ตรวจสอบว่ามีตำแหน่งผู้ใช้หรือไม่
+    if (!userLocation) {
+        alert("กรุณากดปุ่ม 'ตำแหน่งของฉัน' (มุมขวา) และอนุญาตให้เข้าถึงตำแหน่งก่อน");
+        return;
+    }
+
+    // 2. ลบเส้นทางเก่า (ถ้ามี)
+    clearDirections();
+
+    // 3. สร้าง Request สำหรับ Directions Service
+    const request = {
+        origin: userLocation,        // ตำแหน่งปัจจุบันของผู้ใช้
+        destination: destination,    // ตำแหน่งของสถานที่ปลายทาง
+        travelMode: 'WALKING'        // เหมาะสำหรับภายในมหาวิทยาลัย
+    };
+
+    // 4. เรียกใช้งาน Directions Service
+    directionsService.route(request, (result, status) => {
+        if (status == 'OK') {
+            // วาดเส้น Polyline ลงบนแผนที่
+            directionsRenderer.setDirections(result);
+            
+            // ปิด InfoWindow เพื่อให้เห็นเส้นทางชัดเจน
+            if (infoWindow) {
+                infoWindow.close();
+            }
+
+            // แสดงข้อมูลระยะทางและเวลา
+            const route = result.routes[0].legs[0];
+            const infoPanel = document.getElementById('directions-panel');
+            
+            infoPanel.innerHTML = `
+                <div>
+                    <strong>ระยะทาง:</strong> ${route.distance.text}<br>
+                    <strong>เวลาเดิน:</strong> ${route.duration.text}
+                </div>
+                <button id="clear-directions-btn" title="ลบเส้นทาง">&times;</button>
+            `;
+            infoPanel.style.display = 'block';
+
+            // เพิ่ม Listener ให้ปุ่ม X (ลบเส้นทาง) ที่เพิ่งสร้าง
+            document.getElementById('clear-directions-btn').addEventListener('click', clearDirections);
+
+        } else {
+            alert('ไม่สามารถค้นหาเส้นทางได้: ' + status);
+        }
+    });
+}
+
+
+function clearDirections() {
+    if (directionsRenderer) {
+        directionsRenderer.setDirections(null); // ลบเส้นออกจากแผนที่
+    }
+
+    const infoPanel = document.getElementById('directions-panel');
+    if (infoPanel) {
+        infoPanel.style.display = 'none'; // ซ่อนกล่องข้อมูล
+        infoPanel.innerHTML = '';
+    }
+}
