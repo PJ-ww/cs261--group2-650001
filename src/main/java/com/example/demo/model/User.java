@@ -2,7 +2,9 @@ package com.example.demo.model;
 /*kim */
 import java.util.HashSet;
 import java.util.Set;
-
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,6 +14,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
+
 public class User implements UserDetails {
 
     public enum Role { ROLE_USER, ROLE_ADMIN }
@@ -30,12 +33,15 @@ public class User implements UserDetails {
     @JoinTable(
         name = "user_bookmarks", // ชื่อตารางใหม่ที่จะสร้าง
         joinColumns = @JoinColumn(name = "user_id"), // คอลัมน์สำหรับ User
-        inverseJoinColumns = @JoinColumn(name = "place_id") // คอลัมน์สำหรับ Place
+        inverseJoinColumns = @JoinColumn(name = "place_id"), // คอลัมน์สำหรับ Place
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "place_id"})
     )
+    
     private Set<Place> bookmarks = new HashSet<>();
     //ให้รับรู้ว่า User 1 คน สามารถมีประวัติตำแหน่ง (UserLocation) ได้หลายอัน kim
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserLocation> locations = new HashSet<>();
+    
 
     public Long getId() { return id; }
     public String getStudentId() { return studentId; }
