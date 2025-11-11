@@ -9,7 +9,6 @@ import com.example.demo.config.DataSeeder;
 
 // import com.example.demo.controller.DataSeeder; // ไม่จำเป็นต้องใช้ใน ImageController
 
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
 

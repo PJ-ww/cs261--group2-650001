@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorite</title>
+    <link rel="stylesheet" href="favorites-style.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> 
+</head>
+<body>
+
+    <header class="header">
+        <h1 class="header-title">Favorite</h1>
+    </header>
+
+    <div class="container">
+        <div id="favorites-list" class="favorites-list">
+            <div class="favorite-card">
+                <div class="card-image-placeholder">
+                    <i class="fas fa-image"></i>
+                </div>
+                <div class="card-content">
+                    <div class="card-header">
+                        <h3 class="card-title">อาคารเรียนรวมสังคมศาสตร์ 3 (SC3)</h3>
+                        <i class="fas fa-bookmark card-delete-icon" data-name="SC3"></i> 
+                    </div>
+                    <div class="card-actions">
+                        <button class="map-btn">ดูแผนที่</button>
+                        <button class="remove-btn" data-name="SC3">ลบ</button>
+                    </div>
+                </div>
+            </div>
+            </div>
+        
+        <p id="empty-message" class="empty-message" style="display:none;">
+            คุณยังไม่มีรายการโปรดที่บันทึกไว้
+        </p>
+
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="map.html" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="favorites.html" class="nav-item active">
+            <i class="fas fa-bookmark"></i>
+            <span>Favorites</span>
+        </a>
+        <a href="login.html" class="nav-item">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <script src="map-script.js"></script>
+    <script src="detail.html"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const favoritesList = document.getElementById('favorites-list');
+        const emptyMessage = document.getElementById('empty-message');
+
+        // โครงร่างข้อมูลรายการโปรดที่บันทึกไว้ (เช่น จาก localStorage)
+        // ในการใช้งานจริง, คุณจะอ่านค่านี้จาก localStorage: 
+        // const storedFavorites = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+        const storedFavorites = [
+            { name: "อาคารเรียนรวมสังคมศาสตร์ 3 (SC3)", shortName: "SC3", imageUrl: "placeholder.jpg" },
+            { name: "อาคารเรียนรวมสังคมศาสตร์ 1 (SC1)", shortName: "SC1", imageUrl: "placeholder.jpg" },
+            { name: "บ้านรวมจุฬาภรณ์ (CS.4)", shortName: "CS4", imageUrl: "placeholder.jpg" }
+        ];
+
+        /**
+        * สร้าง HTML Card สำหรับสถานที่แต่ละแห่ง
+        * @param {Object} location - ข้อมูลสถานที่
+        */
+        const createFavoriteCard = (location) => {
+            const card = document.createElement('div');
+            card.className = 'favorite-card';
+            card.innerHTML = `
+                <div class="card-image-placeholder">
+                    <i class="fas fa-image"></i>
+                </div>
+                <div class="card-content">
+                    <div class="card-header">
+                        <h3 class="card-title">${location.name}</h3>
+                        <i class="fas fa-bookmark card-delete-icon" data-shortname="${location.shortName}"></i> 
+                    </div>
+                    <div class="card-actions">
+                        <button class="map-btn" data-shortname="${location.shortName}">ดูแผนที่</button>
+                        <button class="remove-btn" data-shortname="${location.shortName}">ลบ</button>
+                    </div>
+                </div>
+            `;
+            return card;
+        };
+
+        /**
+        * แสดงรายการโปรดทั้งหมดบนหน้าจอ
+         */
+        const renderFavorites = (favorites) => {
+            favoritesList.innerHTML = ''; // ล้างรายการเดิม
+        
+            if (favorites.length === 0) {
+                emptyMessage.style.display = 'block';
+                return;
+            }
+
+            emptyMessage.style.display = 'none';
+
+            favorites.forEach(location => {
+                const card = createFavoriteCard(location);
+                favoritesList.appendChild(card);
+            });
+
+            // เพิ่ม Event Listeners ให้กับปุ่มทั้งหมดที่สร้างขึ้นมาใหม่
+            attachEventListeners();
+        };
+    
+        /**
+        * จัดการการลบรายการโปรด
+        */
+        const handleRemoveFavorite = (shortName) => {
+            // **TODO:** // 1. กรองรายการออกจาก array (storedFavorites)
+            // 2. บันทึก array ที่อัปเดตแล้วกลับไปที่ localStorage
+            // 3. เรียก renderFavorites(newFavoritesArray) เพื่ออัปเดต UI
+
+            alert(`ลบ "${shortName}" ออกจากรายการโปรด`);
+            // ตัวอย่างการอัปเดต:
+            // const newFavorites = storedFavorites.filter(item => item.shortName !== shortName);
+            // localStorage.setItem('bookmarks', JSON.stringify(newFavorites));
+            // renderFavorites(newFavorites);
+        };
+
+        /**
+         * จัดการการคลิกปุ่มต่างๆ
+         */
+        const attachEventListeners = () => {
+            // Listeners สำหรับปุ่ม "ลบ" และไอคอน Bookmark
+            document.querySelectorAll('.remove-btn, .card-delete-icon').forEach(btn => {
+                btn.addEventListener('click', (event) => {
+                    const shortName = event.target.getAttribute('data-shortname');
+                    handleRemoveFavorite(shortName);
+                });
+            });
+
+            // Listeners สำหรับปุ่ม "ดูแผนที่"
+            document.querySelectorAll('.map-btn').forEach(btn => {
+                btn.addEventListener('click', (event) => {
+                    const shortName = event.target.getAttribute('data-shortname');
+                    // **TODO:** นำทางไปยังหน้าแผนที่และโฟกัสที่สถานที่นั้น
+                    // window.location.href = `map.html?focus=${shortName}`;
+                    alert(`เปิดแผนที่และโฟกัสที่ ${shortName}`);
+                });
+            });
+        };
+
+        // เริ่มต้นแสดงรายการเมื่อโหลดหน้า
+        renderFavorites(storedFavorites);
+    });
+
+
+
+    </script>
+</body>
+</html>

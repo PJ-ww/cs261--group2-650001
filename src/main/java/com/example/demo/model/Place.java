@@ -3,6 +3,9 @@ package com.example.demo.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.util.HashSet;
+import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "places")
@@ -43,6 +46,10 @@ public class Place {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
     private Category category;
+
+    @ManyToMany(mappedBy = "bookmarks") // "mappedBy" ชี้ไปที่ field "bookmarks" ใน User.java
+    @JsonIgnore // API แสดงผลข้อมูล User ที่ Bookmark สถานที่
+    private Set<User> bookmarkedBy = new HashSet<>();
 
     // --- Constructors ---
     public Place() {}

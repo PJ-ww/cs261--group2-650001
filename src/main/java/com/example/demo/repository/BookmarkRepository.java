@@ -8,6 +8,6 @@ import java.util.List;
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     Optional<Bookmark> findByUserIdAndTargetIdAndTargetType(Long userId, Long targetId, String targetType);
     List<Bookmark> findByUserId(Long userId);
-    boolean existsByUserIdAndTargetIdAndTargetType(Long userId, Long targetId, String targetType);
+
 }
 
