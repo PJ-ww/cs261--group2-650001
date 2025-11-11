@@ -1,5 +1,6 @@
 package com.example.demo.model;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "bookmarks")
@@ -12,6 +13,8 @@ public class Bookmark {
 	    private Long userId;       
 	    private Long targetId;    
 	    private String targetType; 
+	    
+	    private LocalDateTime createdAt = LocalDateTime.now();
 
 	    public Bookmark() {}
 
@@ -19,6 +22,7 @@ public class Bookmark {
 	        this.userId = userId;
 	        this.targetId = targetId;
 	        this.targetType = targetType;
+	        this.createdAt = LocalDateTime.now();
 	    }
 
 	    
@@ -33,4 +37,7 @@ public class Bookmark {
 
 	    public String getTargetType() { return targetType; }
 	    public void setTargetType(String targetType) { this.targetType = targetType; }
+	    
+	    public LocalDateTime getCreatedAt() { return createdAt; }
+	    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 	}
