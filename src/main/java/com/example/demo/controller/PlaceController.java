@@ -22,6 +22,16 @@ public class PlaceController {
     public List<Place> getAllPlaces(@RequestParam(required = false) String search) {
         return placeService.searchPlaces(search);
     }
+    
+    //update
+    @GetMapping
+    public List<Place> getPlaces(
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "category", required = false) Long categoryId
+    ) {
+        return placeService.getPlaces(search, categoryId);
+    }
+    //update
 
     @PostMapping(produces = "application/json; charset=UTF-8")
     public Place addPlace(@Valid @RequestBody Place place) {
@@ -38,4 +48,5 @@ public class PlaceController {
         placeService.deletePlace(id);
         return "ลบสถานที่เรียบร้อยแล้ว";
     }
+  
 }

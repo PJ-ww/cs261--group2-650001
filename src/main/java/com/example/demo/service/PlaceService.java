@@ -50,4 +50,20 @@ public class PlaceService {
         }
         placeRepository.deleteById(id);
     }
+    //update
+    public List<Place> getPlaces(String search, Long categoryId) {
+        boolean hasSearch = (search != null && !search.trim().isEmpty());
+        boolean hasCategory = (categoryId != null);
+
+        if (hasSearch && hasCategory) {
+            return placeRepository.findByNameContainingIgnoreCaseAndCategory_Id(search.trim(), categoryId);
+        } else if (hasSearch) {
+            return placeRepository.findByNameContainingIgnoreCase(search.trim());
+        } else if (hasCategory) {
+            return placeRepository.findByCategory_Id(categoryId);
+        } else {
+            return placeRepository.findAll();
+        }
+    }
+    //update
 }
