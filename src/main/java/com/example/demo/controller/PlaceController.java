@@ -48,5 +48,6 @@ public class PlaceController {
         placeService.deletePlace(id);
         return "ลบสถานที่เรียบร้อยแล้ว";
     }
+    
   
 }

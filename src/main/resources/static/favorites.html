@@ -14,23 +14,18 @@
     </header>
 
     <div class="container">
-        <div id="favorites-list" class="favorites-list">
-            <div class="favorite-card">
-                <div class="card-image-placeholder">
-                    <i class="fas fa-image"></i>
-                </div>
-                <div class="card-content">
-                    <div class="card-header">
-                        <h3 class="card-title">อาคารเรียนรวมสังคมศาสตร์ 3 (SC3)</h3>
-                        <i class="fas fa-bookmark card-delete-icon" data-name="SC3"></i> 
-                    </div>
-                    <div class="card-actions">
-                        <button class="map-btn">ดูแผนที่</button>
-                        <button class="remove-btn" data-name="SC3">ลบ</button>
-                    </div>
-                </div>
-            </div>
-            </div>
+		<div id="favorites-list" class="favorites-list">
+		    <div class="favorite-card">
+		        <div class="card-header">
+		            <h3 class="card-title">อาคารเรียนรวมสังคมศาสตร์ 3 (SC3)</h3>
+		            <i class="fas fa-bookmark card-delete-icon" data-target-id="3" data-target-type="building"></i> 
+		        </div>
+		        <div class="card-actions">
+		            <button class="map-btn" data-target-id="3" data-target-type="building">ดูแผนที่</button>
+		            <button class="remove-btn" data-target-id="3" data-target-type="building">ลบ</button>
+		        </div>
+		        </div>
+		</div>
         
         <p id="empty-message" class="empty-message" style="display:none;">
             คุณยังไม่มีรายการโปรดที่บันทึกไว้
@@ -56,110 +51,204 @@
     <script src="map-script.js"></script>
     <script src="detail.html"></script>
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const favoritesList = document.getElementById('favorites-list');
-        const emptyMessage = document.getElementById('empty-message');
+		document.addEventListener('DOMContentLoaded', () => {
+		    const favoritesList = document.getElementById('favorites-list');
+		    const emptyMessage = document.getElementById('empty-message');
 
-        // โครงร่างข้อมูลรายการโปรดที่บันทึกไว้ (เช่น จาก localStorage)
-        // ในการใช้งานจริง, คุณจะอ่านค่านี้จาก localStorage: 
-        // const storedFavorites = JSON.parse(localStorage.getItem('bookmarks') || '[]');
-        const storedFavorites = [
-            { name: "อาคารเรียนรวมสังคมศาสตร์ 3 (SC3)", shortName: "SC3", imageUrl: "placeholder.jpg" },
-            { name: "อาคารเรียนรวมสังคมศาสตร์ 1 (SC1)", shortName: "SC1", imageUrl: "placeholder.jpg" },
-            { name: "บ้านรวมจุฬาภรณ์ (CS.4)", shortName: "CS4", imageUrl: "placeholder.jpg" }
-        ];
+		    // **กำหนดค่า API และ Token**
+		    const API_BASE_URL = '/api/bookmarks'; 
+		    // **สำคัญ:** คุณต้องมีฟังก์ชันที่ใช้ดึง JWT Token ที่ถูกต้องของผู้ใช้
+		    const getAuthToken = () => {
+		        // ตัวอย่าง: ดึงจาก localStorage หรือ session storage
+		        // ในการใช้งานจริงต้องมั่นใจว่า token ถูกเก็บอย่างปลอดภัย
+		        return localStorage.getItem('authToken') || 'your_default_test_token'; 
+		    };
+		    
+		    // ตัวแปรสำหรับเก็บรายการโปรดที่ดึงมาจาก API
+		    let currentFavorites = []; 
 
-        /**
-        * สร้าง HTML Card สำหรับสถานที่แต่ละแห่ง
-        * @param {Object} location - ข้อมูลสถานที่
-        */
-        const createFavoriteCard = (location) => {
-            const card = document.createElement('div');
-            card.className = 'favorite-card';
-            card.innerHTML = `
-                <div class="card-image-placeholder">
-                    <i class="fas fa-image"></i>
-                </div>
-                <div class="card-content">
-                    <div class="card-header">
-                        <h3 class="card-title">${location.name}</h3>
-                        <i class="fas fa-bookmark card-delete-icon" data-shortname="${location.shortName}"></i> 
-                    </div>
-                    <div class="card-actions">
-                        <button class="map-btn" data-shortname="${location.shortName}">ดูแผนที่</button>
-                        <button class="remove-btn" data-shortname="${location.shortName}">ลบ</button>
-                    </div>
-                </div>
-            `;
-            return card;
-        };
+		    // **สมมติ:** ฟังก์ชันนี้จะใช้ในการดึงรายละเอียดของสถานที่จาก Target ID
+		    // ในโปรเจกต์จริง คุณจะต้องเรียก API อื่น (เช่น /api/buildings/{targetId})
+		    const getTargetDetails = (targetId, targetType) => {
+		        // Mock data เพื่อให้แสดงผลได้
+		        if (targetId == 3 && targetType == 'building') return { name: "อาคารเรียนรวมสังคมศาสตร์ 3 (SC3)" };
+		        if (targetId == 1 && targetType == 'building') return { name: "อาคารเรียนรวมสังคมศาสตร์ 1 (SC1)" };
+		        if (targetId == 4 && targetType == 'building') return { name: "บ้านรวมจุฬาภรณ์ (CS.4)" };
+		        return { name: `รายการ ID ${targetId} (${targetType})` };
+		    };
 
-        /**
-        * แสดงรายการโปรดทั้งหมดบนหน้าจอ
-         */
-        const renderFavorites = (favorites) => {
-            favoritesList.innerHTML = ''; // ล้างรายการเดิม
-        
-            if (favorites.length === 0) {
-                emptyMessage.style.display = 'block';
-                return;
-            }
+		    // --- ฟังก์ชันดึงข้อมูลจาก API ---
+		    const fetchUserFavorites = async () => {
+		        const token = getAuthToken();
+		        if (!token) {
+		            emptyMessage.innerHTML = '⚠️ กรุณาเข้าสู่ระบบเพื่อดูรายการโปรด';
+		            emptyMessage.style.display = 'block';
+		            return [];
+		        }
 
-            emptyMessage.style.display = 'none';
+		        try {
+		            const response = await fetch(API_BASE_URL, {
+		                method: 'GET',
+		                headers: {
+		                    'Authorization': `Bearer ${token}`
+		                }
+		            });
 
-            favorites.forEach(location => {
-                const card = createFavoriteCard(location);
-                favoritesList.appendChild(card);
-            });
+		            if (response.status === 403) {
+		                emptyMessage.innerHTML = '⚠️ เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่';
+		                emptyMessage.style.display = 'block';
+		                return [];
+		            }
 
-            // เพิ่ม Event Listeners ให้กับปุ่มทั้งหมดที่สร้างขึ้นมาใหม่
-            attachEventListeners();
-        };
-    
-        /**
-        * จัดการการลบรายการโปรด
-        */
-        const handleRemoveFavorite = (shortName) => {
-            // **TODO:** // 1. กรองรายการออกจาก array (storedFavorites)
-            // 2. บันทึก array ที่อัปเดตแล้วกลับไปที่ localStorage
-            // 3. เรียก renderFavorites(newFavoritesArray) เพื่ออัปเดต UI
+		            if (!response.ok) {
+		                throw new Error('Failed to fetch bookmarks');
+		            }
 
-            alert(`ลบ "${shortName}" ออกจากรายการโปรด`);
-            // ตัวอย่างการอัปเดต:
-            // const newFavorites = storedFavorites.filter(item => item.shortName !== shortName);
-            // localStorage.setItem('bookmarks', JSON.stringify(newFavorites));
-            // renderFavorites(newFavorites);
-        };
+		            const apiData = await response.json(); 
+		            
+		            // แปลงข้อมูล API (targetId, targetType) เป็นข้อมูลสำหรับแสดงผล (name)
+		            currentFavorites = apiData.map(item => ({
+		                targetId: item.targetId,
+		                targetType: item.targetType,
+		                name: getTargetDetails(item.targetId, item.targetType).name,
+		                imageUrl: "placeholder.jpg" 
+		            }));
+		            
+		            return currentFavorites;
 
-        /**
-         * จัดการการคลิกปุ่มต่างๆ
-         */
-        const attachEventListeners = () => {
-            // Listeners สำหรับปุ่ม "ลบ" และไอคอน Bookmark
-            document.querySelectorAll('.remove-btn, .card-delete-icon').forEach(btn => {
-                btn.addEventListener('click', (event) => {
-                    const shortName = event.target.getAttribute('data-shortname');
-                    handleRemoveFavorite(shortName);
-                });
-            });
+		        } catch (error) {
+		            console.error("Error fetching favorites:", error);
+		            emptyMessage.innerHTML = '❌ เกิดข้อผิดพลาดในการดึงข้อมูลรายการโปรด';
+		            emptyMessage.style.display = 'block';
+		            return [];
+		        }
+		    };
 
-            // Listeners สำหรับปุ่ม "ดูแผนที่"
-            document.querySelectorAll('.map-btn').forEach(btn => {
-                btn.addEventListener('click', (event) => {
-                    const shortName = event.target.getAttribute('data-shortname');
-                    // **TODO:** นำทางไปยังหน้าแผนที่และโฟกัสที่สถานที่นั้น
-                    // window.location.href = `map.html?focus=${shortName}`;
-                    alert(`เปิดแผนที่และโฟกัสที่ ${shortName}`);
-                });
-            });
-        };
+		    // --- ฟังก์ชันแสดงผล (Render) ---
+		    
+		    /**
+		     * สร้าง HTML Card สำหรับสถานที่แต่ละแห่ง
+		     */
+		    const createFavoriteCard = (location) => {
+		        const card = document.createElement('div');
+		        card.className = 'favorite-card';
+		        card.innerHTML = `
+		            <div class="card-image-placeholder">
+		                <i class="fas fa-image"></i>
+		            </div>
+		            <div class="card-content">
+		                <div class="card-header">
+		                    <h3 class="card-title">${location.name}</h3>
+		                    <i class="fas fa-bookmark card-delete-icon" data-target-id="${location.targetId}" data-target-type="${location.targetType}"></i> 
+		                </div>
+		                <div class="card-actions">
+		                    <button class="map-btn" data-target-id="${location.targetId}" data-target-type="${location.targetType}">ดูแผนที่</button>
+		                    <button class="remove-btn" data-target-id="${location.targetId}" data-target-type="${location.targetType}">ลบ</button>
+		                </div>
+		            </div>
+		        `;
+		        return card;
+		    };
 
-        // เริ่มต้นแสดงรายการเมื่อโหลดหน้า
-        renderFavorites(storedFavorites);
-    });
+		    /**
+		     * แสดงรายการโปรดทั้งหมดบนหน้าจอ
+		     */
+		    const renderFavorites = (favorites) => {
+		        favoritesList.innerHTML = ''; 
+		        if (favorites.length === 0) {
+		            emptyMessage.style.display = 'block';
+		            return;
+		        }
 
+		        emptyMessage.style.display = 'none';
+		        favorites.forEach(location => {
+		            const card = createFavoriteCard(location);
+		            favoritesList.appendChild(card);
+		        });
+		        attachEventListeners();
+		    };
+		    
+		    // --- ฟังก์ชันลบรายการผ่าน API ---
 
+		    /**
+		     * จัดการการลบรายการโปรดผ่าน API
+		     */
+		    const handleRemoveFavorite = async (targetId, targetType) => {
+		        const token = getAuthToken();
+		        if (!token) return alert("❌ กรุณาเข้าสู่ระบบ");
 
-    </script>
+		        const confirmDelete = confirm(`คุณต้องการลบ "${getTargetDetails(targetId, targetType).name}" ออกจากรายการโปรดหรือไม่?`);
+		        if (!confirmDelete) return;
+
+		        try {
+		            const response = await fetch(`${API_BASE_URL}?targetId=${targetId}&targetType=${targetType}`, {
+		                method: 'DELETE',
+		                headers: {
+		                    'Authorization': `Bearer ${token}`
+		                }
+		            });
+
+		            if (!response.ok) {
+		                const errorData = await response.json().catch(() => ({ error: 'Unknown Error' }));
+		                throw new Error(errorData.error || 'Failed to delete bookmark');
+		            }
+
+		            alert("✅ ลบ Bookmark สำเร็จ");
+		            
+		            // อัปเดต UI โดยการดึงข้อมูลใหม่
+		            const newFavorites = await fetchUserFavorites();
+		            renderFavorites(newFavorites);
+
+		        } catch (error) {
+		            console.error("Error removing favorite:", error);
+		            alert(`❌ ลบรายการโปรดล้มเหลว: ${error.message}`);
+		        }
+		    };
+
+		    // --- ฟังก์ชันแนบ Event Listeners ---
+
+		    /**
+		     * จัดการการคลิกปุ่มต่างๆ
+		     */
+		    const attachEventListeners = () => {
+		        // Listeners สำหรับปุ่ม "ลบ" และไอคอน Bookmark
+		        document.querySelectorAll('.remove-btn, .card-delete-icon').forEach(btn => {
+		            btn.addEventListener('click', (event) => {
+		                const targetId = event.target.getAttribute('data-target-id');
+		                const targetType = event.target.getAttribute('data-target-type');
+		                handleRemoveFavorite(targetId, targetType);
+		            });
+		        });
+
+		        // Listeners สำหรับปุ่ม "ดูแผนที่"
+		        document.querySelectorAll('.map-btn').forEach(btn => {
+		            btn.addEventListener('click', (event) => {
+		                const targetId = event.target.getAttribute('data-target-id');
+		                const targetType = event.target.getAttribute('data-target-type');
+		                // นำทางไปยังหน้าแผนที่และโฟกัสที่สถานที่นั้น
+		                alert(`เปิดแผนที่และโฟกัสที่ ${targetType} ID: ${targetId}`);
+		                // window.location.href = `map.html?focusId=${targetId}&type=${targetType}`;
+		            });
+		        });
+		    };
+
+		    /**
+		     * ฟังก์ชันเริ่มต้น: โหลดรายการโปรดจาก API
+		     */
+		    const initialize = async () => {
+		        // ล้างรายการตัวอย่างใน HTML ก่อน
+		        favoritesList.innerHTML = '';
+		        emptyMessage.innerHTML = 'กำลังโหลดรายการโปรด...';
+		        emptyMessage.style.display = 'block';
+
+		        const favorites = await fetchUserFavorites();
+		        renderFavorites(favorites);
+		    };
+
+		    // เริ่มต้นแสดงรายการเมื่อโหลดหน้า
+		    initialize();
+		});
+	    </script>
+	
 </body>
 </html>
