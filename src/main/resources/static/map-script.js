@@ -6,6 +6,9 @@ let infoWindow = null;
 let directionsService;
 let directionsRenderer;
 
+// --- 1. เพิ่มตัวแปรสำหรับเก็บ Markers ---
+let allMarkers = []; // เก็บหมุดทั้งหมดที่โหลดมา
+let searchTempMarker = null; // เก็บหมุดชั่วคราวที่เกิดจากการค้นหา
 
 document.addEventListener('DOMContentLoaded', function() {
     // ต้องเรียก setupMapControls() ก่อนเพื่อให้ปุ่มต่างๆ ทำงานได้เมื่อ DOM โหลดเสร็จ
@@ -100,7 +103,8 @@ async function initMap() {
                 // =========================================================
                 // U3. Task 3.4: แสดงข้อมูลเบื้องต้นเมื่อคลิกที่หมุด
                 // =========================================================
-
+				// --- 2. เก็บ Marker ที่สร้างไว้ ---
+				allMarkers.push(marker);
                 marker.addListener('click', () => {
     
                 // 1. สร้างเนื้อหา HTML สำหรับ Popup
@@ -140,7 +144,17 @@ async function initMap() {
                       directionsBtn.onclick = () => {
                           const lat = parseFloat(directionsBtn.getAttribute('data-lat'));
                           const lng = parseFloat(directionsBtn.getAttribute('data-lng'));
-                          calculateAndDisplayRoute({ lat: lat, lng: lng });
+                          
+						  // 1. ปิด InfoWindow *ก่อน* เริ่มนำทาง
+						  if (infoWindow) {
+						  	infoWindow.close();
+						  }
+						                            
+						  // 2. ซ่อน Marker
+						  hideAllMarkers(); 
+						  marker.setMap(null);
+						  
+						  calculateAndDisplayRoute({ lat: lat, lng: lng });
                       };
                     }
                     });
@@ -265,7 +279,18 @@ function setupMapControls() {
     }
 } 
 
+// --- 3. เพิ่มฟังก์ชันสำหรับซ่อนและแสดง Markers ---
+function hideAllMarkers() {
+    allMarkers.forEach(marker => {
+        marker.setMap(null);
+    });
+}
 
+function showAllMarkers() {
+    allMarkers.forEach(marker => {
+        marker.setMap(map);
+    });
+}
 
 // เชิ่อมกับbackend
 async function fetchAndDisplayDetails(searchTerm) {
@@ -315,12 +340,16 @@ async function fetchAndDisplayDetails(searchTerm) {
             lat: locationDetails.latitude, 
             lng: locationDetails.longitude 
         };
+		
+		// --- 5. เรียกใช้การนำทางทันที ---
+		calculateAndDisplayRoute(position);
 
         // 2. Move Map: ขยับแผนที่และซูมไปยังตำแหน่งที่ค้นพบ (เหมือนเดิม)
         map.setCenter(position);
         map.setZoom(17); 
         
         // 3. Display Popup: สร้าง Content ใหม่โดยใช้ Field ที่แก้ไขแล้ว
+		
         
         const content = `
         <div class="place-popup">
@@ -338,6 +367,8 @@ async function fetchAndDisplayDetails(searchTerm) {
             </button>
         </div> 
         `;
+		
+		
         // <p>สถานะความหนาแน่น: <b>${locationDetails.densityStatus || 'N/A'}</b></p>
         
         const tempMarker = new google.maps.Marker({
@@ -348,6 +379,8 @@ async function fetchAndDisplayDetails(searchTerm) {
 
         // เปิด Popup ที่ตำแหน่ง Marker ชั่วคราว
         infoWindow.setContent(content);
+		
+		
 
          google.maps.event.addListener(infoWindow, 'domready', () => {
             const directionsBtn = document.querySelector('.directions-btn');
@@ -359,12 +392,13 @@ async function fetchAndDisplayDetails(searchTerm) {
             };
             }
         });
-
+		
+		
         infoWindow.open(map, tempMarker);
 
         // (***สำคัญ: อาจต้องลบ Marker ชั่วคราวออกเมื่อ Popup ปิด หากคุณไม่ต้องการให้มี Marker ซ้ำซ้อน***)
         google.maps.event.addListener(infoWindow, 'closeclick', function() {
-            tempMarker.setMap(null); // ลบ Marker ชั่วคราว
+			clearDirections();
         });
         
     } catch (error) {
@@ -431,11 +465,18 @@ function calculateAndDisplayRoute(destination) {
     // 1. ตรวจสอบว่ามีตำแหน่งผู้ใช้หรือไม่
     if (!userLocation) {
         alert("กรุณากดปุ่ม 'ตำแหน่งของฉัน' (มุมขวา) และอนุญาตให้เข้าถึงตำแหน่งก่อน");
+		showAllMarkers();
         return;
     }
+	
+	if (directionsRenderer) {
+	        directionsRenderer.setDirections(null);
+	}
+	    
+	// --- ซ่อน Marker ทั้งหมด (ย้ายมาไว้ที่นี่เพื่อให้แน่ใจว่าซ่อนก่อนวาด) ---
+	hideAllMarkers();
 
-    // 2. ลบเส้นทางเก่า (ถ้ามี)
-    clearDirections();
+   
 
     // 3. สร้าง Request สำหรับ Directions Service
     const request = {
@@ -473,6 +514,8 @@ function calculateAndDisplayRoute(destination) {
 
         } else {
             alert('ไม่สามารถค้นหาเส้นทางได้: ' + status);
+			// ถ้าหาเส้นทางไม่เจอ ให้คืน Marker กลับมา
+			showAllMarkers();
         }
     });
 }
@@ -488,4 +531,18 @@ function clearDirections() {
         infoPanel.style.display = 'none'; // ซ่อนกล่องข้อมูล
         infoPanel.innerHTML = '';
     }
+	
+	// ปิด InfoWindow ที่อาจจะเปิดอยู่
+	if (infoWindow) {
+	    infoWindow.close();
+	 }
+
+	 // ลบ Marker ชั่วคราวที่เกิดจากการค้นหา (ถ้ามี)
+	 if (searchTempMarker) {
+	     searchTempMarker.setMap(null);
+	     searchTempMarker = null;
+	  }
+
+	   // แสดง Marker ทั้งหมดกลับคืนมา
+	   showAllMarkers();
 }
