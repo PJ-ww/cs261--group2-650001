@@ -58,7 +58,7 @@ public class PlaceService {
             
             // 2. ถ้ามี categoryId ด้วย ให้ค้นหาแบบจำกัดหมวดหมู่
             if (categoryId != null) {
-                return placeRepository.findByNameContainingIgnoreCaseAndCategoryId(search, categoryId);
+                return placeRepository.findByNameContainingIgnoreCaseAndCategory_Id(search, categoryId);
             } 
             
             // 3. ถ้าไม่มี categoryId ให้ค้นหาจากชื่ออย่างเดียว
