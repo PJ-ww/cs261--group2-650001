@@ -43,7 +43,7 @@
   </main>
 
   <footer class="bottom-nav">
-     <a href="/map.html" class="nav-item" id="homeButton">
+     <a href="/user/map.html" class="nav-item" id="homeButton">
        <i class="fas fa-home"></i><span>Home</span>
      </a>
      <a href="/user/favorites.html" class="nav-item" id="favoriteButton">
@@ -54,63 +54,53 @@
      </a>
    </footer>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      // โหลดข้อมูลผู้ใช้จาก localStorage
-      const userData = localStorage.getItem("student_info");
+   <script>
+       // --- FIX 2: Moved goBack() function to the global scope ---
+       // ปุ่ม back
+       function goBack() {
+         window.history.back();
+       }
 
-      if (userData) {
-        const parsed = JSON.parse(userData);
-        const data = parsed.data ? parsed.data : parsed;
+       // --- FIX 2: Moved logout() function to the global scope ---
+       // Logout
+       async function logout() {
+         try {
+           // 1. Tell the server to destroy the session
+           await fetch("/api/logout", {
+             method: "POST",
+             credentials: "include" // This is important to send the cookie
+           });
 
-        document.getElementById("username").textContent =
-          data.displayname_en || data.displayname_th || data.userName || "Unknown User";
+         } catch (error) {
+           console.error("Error during logout:", error);
+         } finally {
+           // 2. ALWAYS clear local storage and redirect
+           localStorage.clear();
+           window.location.href = "/login.html";
+         }
+       }
 
-        document.getElementById("email").textContent =
-          data.email || (data.userName ? data.userName + "@dome.tu.ac.th" : "");
-      } else {
-        // ถ้าไม่มีข้อมูล → กลับไปหน้า login
-        window.location.href = "/login.html";
-        return;
-      }
+       document.addEventListener("DOMContentLoaded", () => {
+         // โหลดข้อมูลผู้ใช้จาก localStorage
+         const userData = localStorage.getItem("student_info");
 
-      // ผูก event ให้ปลอดภัย (เช็ค element ก่อน)
-      const homeBtn = document.getElementById("homeButton");
-      const favBtn = document.getElementById("favoriteButton");
-      const profileBtn = document.getElementById("profileButton");
+         if (userData) {
+           const parsed = JSON.parse(userData);
+           const data = parsed.data ? parsed.data : parsed;
 
-      if (homeBtn) {
-        homeBtn.addEventListener("click", (e) => {
-          e.preventDefault(); // Stop the <a> tag
-          window.location.href = "/map.html";
-        });
-      }
+           document.getElementById("username").textContent =
+             data.displayname_en || data.displayname_th || data.userName || "Unknown User";
 
-      if (favBtn) {
-        favBtn.addEventListener("click", (e) => {
-          e.preventDefault(); // Stop the <a> tag
-          window.location.href = "/user/favorites.html";
-        });
-      }
-
-      if (profileBtn) {
-        profileBtn.addEventListener("click", (e) => {
-          e.preventDefault(); // Stop the <a> tag
-          window.location.href = "/user/profile_logged_in.html";
-        });
-      }
-    });
-
-    // Logout
-    function logout() {
-      localStorage.clear();
-      window.location.href = "/login.html";
-    }
-
-    // ปุ่ม back
-    function goBack() {
-      window.history.back();
-    }
-  </script>
+           document.getElementById("email").textContent =
+             data.email || (data.userName ? data.userName + "@dome.tu.ac.th" : "");
+   		  
+         } else {
+           // ถ้าไม่มีข้อมูล → กลับไปหน้า login
+           window.location.href = "/login.html";
+           return;
+         }
+         
+       }); // <-- FIX 1: Added the missing closing }); for the listener
+     </script>
 </body>
 </html>

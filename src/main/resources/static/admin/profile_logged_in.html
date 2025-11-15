@@ -80,10 +80,22 @@
     });
 
     // ✅ Logout
-    function logout() {
-      localStorage.clear();
-      window.location.href = "/login.html";
-    }
+	async function logout() {
+	      try {
+	        // 1. Tell the server to destroy the session
+	        await fetch("/api/logout", {
+	          method: "POST",
+	          credentials: "include" // This is important to send the cookie
+	        });
+
+	      } catch (error) {
+	        console.error("Error during logout:", error);
+	      } finally {
+	        // 2. ALWAYS clear local storage and redirect
+	        localStorage.clear();
+	        window.location.href = "/login.html";
+	      }
+	    }
 
     function goBack() {
       window.history.back();
