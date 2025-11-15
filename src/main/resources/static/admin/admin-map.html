@@ -7,9 +7,9 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-	<link rel="icon" type="image/png" href="/images/favicon.png">
+    <link rel="icon" type="image/png" href="/images/favicon.png">
 
     <link rel="stylesheet" href="../map-style.css">
      
@@ -24,8 +24,14 @@
         </div>
 
         <div class="search-container">
-            <input type="text" id="search-input" placeholder="Search">
-            <button class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>  
+            <input type="text" id="search-input" placeholder="Search for places...">
+			<button class="filter-btn">
+			   	<i class="fa-solid fa-sliders"></i> 
+			</button>
+			<button class="search-btn">
+				<i class="fa-solid fa-magnifying-glass"></i>
+			</button>
+			
         </div>
 
         <div class="side-controls">
@@ -38,29 +44,45 @@
                 <i class="fa-solid fa-house"></i>
                 <span>Home</span>
             </a>
-
             <a href="category.html" class="nav-item">
                 <i class="fa-solid fa-gear"></i>
                 <span>Change Category</span>
             </a>
-
             <a href="/admin/profile_logged_in.html" class="nav-item">
                 <i class="fa-solid fa-user"></i>
                 <span>Profile</span>
             </a>
         </div>
-        <div id="directions-panel"></div>
-    </div>
 
-    <script src="../map-script.js"></script>
+        
+        <div id="filter-modal" class="filter-modal-overlay">
+            
+            <div class="filter-modal-content">
+                
+                <div class="filter-modal-header">
+                    <h3>เลือกหมวดหมู่ที่สนใจ</h3>
+                    <button id="close-modal-btn" title="ปิด">&times;</button>
+                </div>
+                
+                <div class="filter-modal-body" id="filter-categories-list">
+                    <p>กำลังโหลดหมวดหมู่...</p>
+                </div>
+                
+                <div class="filter-modal-footer">
+                    <button id="apply-filter-btn" class="apply-btn">ตกลง</button>
+                </div>
+
+            </div>
+        </div>
+        </div> <script src="../map-script.js"></script>
     <script async
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDXg9TGFh7rvgORmv5d-8rUJS8N1jrjPRE&callback=initMap&libraries=places,directions">
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDXg9TGFh7rvgORmv5d-8rUJS8N1jrjPRE&callback=initMap&libraries=places">
     </script>
-	
-	<script type="module">
-				  import { protectPage } from "/authGuard.js";
-				  protectPage(true); // 🧩 บังคับเฉพาะ admin
-	</script>
+    
+    <script type="module">
+              import { protectPage } from "/authGuard.js";
+              protectPage(true); // 🧩 บังคับเฉพาะ admin
+    </script>
 
 </body>
 </html>

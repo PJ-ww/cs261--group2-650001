@@ -1,33 +1,42 @@
-/* นำเข้า Google Fonts - Sarabun (เหมือน Dashboard) */
+/* นำเข้า Google Fonts - Sarabun */
 @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
 
-/* General setup */
+/* ============================
+   🧭 General setup
+============================ */
 body, html {
     margin: 0; 
     padding: 0; 
     height: 100%; 
     width: 100%;
-    font-family: 'Sarabun', sans-serif;  /* ✅ เปลี่ยนจาก Kanit เป็น Sarabun */
+    font-family: 'Sarabun', sans-serif;
     overflow: hidden;
 }
 
+/* ============================================
+   🎨 โค้ดสำหรับหน้า Map
+============================================ */
 .map-container {
     position: relative;
     width: 100%; 
     height: 100%;
+    font-family: 'Sarabun', sans-serif;
 }
+
 #map {
     width: 100%; 
     height: 100%;
 }
 
-/* Top Bar */
+/* ============================
+   🔺 Top Bar
+============================ */
 .top-bar {
     position: absolute; 
     top: 0; 
     left: 0; 
     width: 100%;
-    background-color: #8B0000; 
+    background-color: #8B0000; /* สีแดงธีม */
     color: white;
     text-align: center; 
     padding: 15px 0;
@@ -51,6 +60,28 @@ body, html {
     padding: 5px; 
     z-index: 10;
 }
+
+#autocomplete-results {
+    /* ตำแหน่งให้อยู่ด้านล่างช่องค้นหา */
+    position: absolute; 
+    top: 50px; /* ควรจะอยู่ด้านล่าง search-container (ลองปรับค่านี้) */
+    left: 5px;
+    right: 5px;
+    
+    /* การจัดรูปแบบหลัก */
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px; /* ใช้ขอบโค้งเดียวกับ search-container */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    max-height: 250px; 
+    overflow-y: auto; 
+    z-index: 999; /* ให้อยู่เหนือแผนที่ แต่อยู่ใต้ top-bar (z-index: 10) */
+    
+    display: none; /* ถูกซ่อนไว้ก่อน และจะแสดงโดย JavaScript */
+    
+    /* 📌 แก้ไขเพื่อให้ครอบคลุมความกว้างของ search-container ทั้งหมด */
+    width: calc(100% - 10px); /* ความกว้างเต็ม search-container ลบด้วย padding ซ้ายขวา */
+}
 .search-container input {
     flex-grow: 1; 
     border: none; 
@@ -69,16 +100,69 @@ body, html {
     cursor: pointer;
 }
 
-/* Side Controls */
+/* ============================
+   🧭 Filter button
+============================ */
+.filter-btn {
+    background: #fff;
+    border-radius: 5px;
+    width: 38px;
+    height: 34px;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-left: 6px;
+    border: 1.5px solid #e5e5e5;
+    
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.filter-btn:hover {
+    background: #f8f8f8;
+    border-color: #ccc;
+}
+
+/* Icon styling */
+.search-btn i,
+.filter-btn i {
+    font-size: 18px;
+}
+
+/* ------------------------------------------------ */
+/* CSS สำหรับแต่ละรายการผลลัพธ์ที่ JS สร้างขึ้น */
+/* ------------------------------------------------ */
+.autocomplete-item {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    font-size: 16px;
+    font-family: 'Sarabun', sans-serif;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none; /* ลบเส้นคั่นท้ายสุด */
+}
+
+.autocomplete-item:hover {
+    background-color: #f0f0f0; 
+}
+
+/* ============================
+   🧭 Side Controls
+============================ */
 .side-controls {
     position: absolute; 
-    top: 130px; 
+    top: 130px; /* ❗ อาจปรับถ้าทับ Chips */
     right: 15px;
     display: flex;
     flex-direction: column;
     gap: 10px; 
     z-index: 10;
 }
+
 .side-controls button {
     background-color: white; 
     border: none; 
@@ -90,92 +174,92 @@ body, html {
     cursor: pointer;
 }
 
-/* Bottom Navigation Bar */
+/* ============================
+   📱 Bottom Navigation Bar
+============================ */
 .bottom-nav {
-  position: fixed; /* ติดล่างตลอด */
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 65px;
-  background-color: #fff;
-  border-top: 1px solid #ccc;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  z-index: 100;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 65px;
+    background-color: #fff;
+    border-top: 1px solid #ccc;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 100;
 }
 
 .nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  color: #666;
-  font-size: 13px;
-  transition: all 0.2s ease;
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    text-decoration: none; 
+    color: #666; 
+    font-size: 13px; 
+    transition: all 0.2s ease;
 }
 
 .nav-item i {
-  font-size: 22px;
-  margin-bottom: 3px;
+    font-size: 22px; 
+    margin-bottom: 3px;
 }
 
 .nav-item.active {
-  color: #801d1d;
-  font-weight: bold;
+    color: #801d1d; 
+    font-weight: bold;
 }
 
 .nav-item:hover {
-  color: #801d1d;
-  transform: translateY(-2px);
+    color: #801d1d; 
+    transform: translateY(-2px);
 }
 
-/* Popup styling for map infowindows */
+/* ============================
+   📍 Popup (Infowindow)
+============================ */
 .place-popup {
-    padding: 5px;
-    max-width: 250px;
+    padding: 5px; 
+    max-width: 250px; 
     font-family: 'Sarabun', sans-serif;
 }
 
-/* หัวข้อ (ชื่อสถานที่) */
 .place-popup h4 {
-    margin: 0 0 5px 0;
-    font-size: 1.1em;
+    margin: 0 0 5px 0; 
+    font-size: 1.1em; 
     color: #2c3e50;
 }
 
-/* ข้อความรายละเอียดทั่วไป */
 .place-popup p {
-    margin: 0 0 3px 0;
+    margin: 0 0 3px 0; 
     font-size: 0.9em;
 }
 
-/* ภาชนะสำหรับจัดกลุ่มปุ่ม */
 .popup-actions {
-    display: flex; /* ใช้ Flexbox เพื่อจัดเรียงปุ่ม */
-    gap: 8px;      /* ระยะห่างระหว่างปุ่ม */
+    display: flex; 
+    gap: 8px; 
     margin-top: 10px;
 }
 
-/* สไตล์พื้นฐานของปุ่มทั้งหมด */
-.details-btn, .bookmark-btn {
-    padding: 6px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 700;
-    transition: background-color 0.2s;
-    text-align: center;
-    flex-grow: 1; /* ทำให้ปุ่มขยายเต็มพื้นที่ที่เหลือ */
-    text-decoration: none; /* สำหรับ details-btn ที่เป็น <a> */
+.details-btn, 
+.bookmark-btn {
+    padding: 6px; 
+    border: none; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    font-weight: 700; 
+    transition: background-color 0.2s; 
+    text-align: center; 
+    flex-grow: 1; 
+    text-decoration: none; 
     font-size: 0.9em;
 }
 
-/* Styling สำหรับปุ่มดูรายละเอียด (เดิม) */
 .details-btn {
-    background-color: #e62d2d;
+    background-color: #e62d2d; 
     color: white;
 }
 
@@ -183,9 +267,8 @@ body, html {
     background-color: #d12727;
 }
 
-/* Styling สำหรับปุ่มบุ๊กมาร์ก (ใหม่) */
 .bookmark-btn {
-    background-color: #3498db; /* สีน้ำเงินสำหรับบุ๊กมาร์ก */
+    background-color: #3498db; 
     color: white;
 }
 
@@ -193,23 +276,18 @@ body, html {
     background-color: #2980b9;
 }
 
-.details-btn:hover {
-    background-color: #c0392b;
-}
-
-/* สไตล์สำหรับปุ่มนำทางใน Popup */
 .directions-btn {
-    display: block;
-    width: 100%;
-    padding: 6px;
+    display: block; 
+    width: 100%; 
+    padding: 6px; 
     margin-top: 5px; 
-    background-color: #3498db; /* สีฟ้า *
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 700;
-    font-family: 'Sarabun', sans-serif; /* ใช้ฟอนต์เดียวกัน */
+    background-color: #3498db; 
+    color: white; 
+    border: none; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    font-weight: 700; 
+    font-family: 'Sarabun', sans-serif; 
     transition: background-color 0.2s;
 }
 
@@ -221,33 +299,137 @@ body, html {
     margin-right: 5px;
 }
 
-/* ✅ TASK 7.4: สไตล์สำหรับกล่องแสดงข้อมูลเส้นทาง */
 #directions-panel {
-    position: absolute;
-    bottom: 80px; /* ให้อยู่เหนือ Bottom Nav */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    max-width: 350px;
-    background-color: white;
-    padding: 10px 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    z-index: 50;
-    display: none; /* ซ่อนไว้ก่อน */
-    font-size: 0.9rem;
+    position: absolute; 
+    bottom: 80px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    width: 90%; 
+    max-width: 350px; 
+    background-color: white; 
+    padding: 10px 15px; 
+    border-radius: 8px; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2); 
+    z-index: 50; 
+    display: none; 
+    font-size: 0.9rem; 
     line-height: 1.4;
 }
 
 #directions-panel button#clear-directions-btn {
-    position: absolute;
-    top: 5px;
-    right: 8px;
+    position: absolute; 
+    top: 5px; 
+    right: 8px; 
+    background: none; 
+    border: none; 
+    font-size: 1.2rem; 
+    color: #999; 
+    cursor: pointer; 
+    padding: 5px; 
+    line-height: 1;
+}
+
+/* ============================
+   ⚙️ Filter Modal (Pop-up)
+============================ */
+.filter-modal-overlay {
+    display: none; 
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+
+.filter-modal-overlay.show {
+    display: flex; 
+}
+
+.filter-modal-content {
+    background: #ffffff;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    overflow: hidden;
+    animation: modal-fade-in 0.3s ease-out;
+}
+
+.filter-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.filter-modal-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+#close-modal-btn {
     background: none;
     border: none;
-    font-size: 1.2rem;
-    color: #999;
+    font-size: 2rem;
+    color: #888;
     cursor: pointer;
-    padding: 5px;
     line-height: 1;
+    padding: 0;
+}
+
+.filter-modal-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px; 
+    max-height: 40vh; /* จำกัดความสูง ถ้าหมวดหมู่เยอะ */
+    overflow-y: auto; /* เพิ่ม Scrollbar ถ้าล้น */
+}
+
+.filter-modal-body label {
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.filter-modal-body input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    accent-color: #8B0000; 
+}
+
+.filter-modal-footer {
+    padding: 15px 20px;
+    background: #f9f9f9;
+    text-align: right;
+    border-top: 1px solid #eee;
+}
+
+.apply-btn {
+    background-color: #8B0000; 
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: 'Sarabun', sans-serif;
+    cursor: pointer;
+}
+
+.apply-btn:hover {
+    background-color: #B71C1C;
+}
+
+@keyframes modal-fade-in {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
 }
