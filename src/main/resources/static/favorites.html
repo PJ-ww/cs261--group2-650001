@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Favorite</title>
     <link rel="stylesheet" href="favorites-style.css"> 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+	<link rel="icon" type="image/png" href="/images/favicon.png"> 
 </head>
 <body>
 
@@ -33,23 +34,20 @@
 
     </div>
 
-    <nav class="bottom-nav">
-        <a href="map.html" class="nav-item">
-            <i class="fas fa-home"></i>
-            <span>Home</span>
-        </a>
-        <a href="favorites.html" class="nav-item active">
-            <i class="fas fa-bookmark"></i>
-            <span>Favorites</span>
-        </a>
-        <a href="login.html" class="nav-item">
-            <i class="fas fa-user"></i>
-            <span>Profile</span>
-        </a>
-    </nav>
+	<footer class="bottom-nav">
+	   <a href="map.html" class="nav-item">
+	     <i class="fas fa-home"></i><span>Home</span>
+	   </a>
+	   <a href="favorites.html" class="nav-item active">
+	     <i class="fas fa-bookmark"></i><span>Favorites</span>
+	   </a>
+	   <a href="profile_logged_in.html" class="nav-item ">
+	     <i class="fas fa-user"></i><span>Profile</span>
+	   </a>
+	 </footer>
 
-    <script src="map-script.js"></script>
-    <script src="detail.html"></script>
+	<script src="../map-script.js"></script>
+	<script src="../detail.html"></script>
     <script>
 		document.addEventListener('DOMContentLoaded', () => {
 		    const favoritesList = document.getElementById('favorites-list');

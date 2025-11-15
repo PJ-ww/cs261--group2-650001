@@ -21,13 +21,7 @@ export function protectPage(requireAdmin = false) {
     return;
   }
 
-  // 🧭 3️⃣ ถ้าออกจากหน้า admin ให้เคลียร์ข้อมูล auth
-  if (!currentUrl.includes("/admin/") && !currentUrl.includes("/profile_logged_in.html")) {
-    console.log("🧹 Leaving admin area → clearing auth info...");
-    localStorage.removeItem("role");
-    localStorage.removeItem("tu_token");
-    localStorage.removeItem("student_info");
-  }
+  // 🧭 3️⃣ REMOVED THE PROBLEMATIC BLOCK THAT CLEARED LOCALSTORAGE
 
   console.log(`✅ Access granted to: ${currentUrl} (${requireAdmin ? "Admin" : "User"})`);
 }
