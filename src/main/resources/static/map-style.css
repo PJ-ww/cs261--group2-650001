@@ -51,6 +51,28 @@ body, html {
     padding: 5px; 
     z-index: 10;
 }
+
+#autocomplete-results {
+    /* ตำแหน่งให้อยู่ด้านล่างช่องค้นหา */
+    position: absolute; 
+    top: 50px; /* ควรจะอยู่ด้านล่าง search-container (ลองปรับค่านี้) */
+    left: 5px;
+    right: 5px;
+    
+    /* การจัดรูปแบบหลัก */
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px; /* ใช้ขอบโค้งเดียวกับ search-container */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    max-height: 250px; 
+    overflow-y: auto; 
+    z-index: 999; /* ให้อยู่เหนือแผนที่ แต่อยู่ใต้ top-bar (z-index: 10) */
+    
+    display: none; /* ถูกซ่อนไว้ก่อน และจะแสดงโดย JavaScript */
+    
+    /* 📌 แก้ไขเพื่อให้ครอบคลุมความกว้างของ search-container ทั้งหมด */
+    width: calc(100% - 10px); /* ความกว้างเต็ม search-container ลบด้วย padding ซ้ายขวา */
+}
 .search-container input {
     flex-grow: 1; 
     border: none; 
@@ -67,6 +89,25 @@ body, html {
     padding: 8px 12px;
     margin: 0 5px; 
     cursor: pointer;
+}
+
+/* ------------------------------------------------ */
+/* CSS สำหรับแต่ละรายการผลลัพธ์ที่ JS สร้างขึ้น */
+/* ------------------------------------------------ */
+.autocomplete-item {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    font-size: 16px;
+    font-family: 'Sarabun', sans-serif;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none; /* ลบเส้นคั่นท้ายสุด */
+}
+
+.autocomplete-item:hover {
+    background-color: #f0f0f0; 
 }
 
 /* Side Controls */
