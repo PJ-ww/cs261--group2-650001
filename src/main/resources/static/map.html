@@ -25,9 +25,12 @@
 
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Search">
+			<button class="filter-btn">
+							<i class="fa-solid fa-sliders"></i> 
+						</button>
             <button class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>  
-            
-            <div id="autocomplete-results"></div> 
+            <div id="autocomplete-results"></div>
+			
         </div>
 
         <div class="side-controls">
@@ -49,6 +52,26 @@
 					<div id="directions-panel"></div>
 					</div>
 			<div id="directions-panel"></div>
+			</div>
+			
+			<div id="filter-modal" class="filter-modal-overlay">
+			            
+			            <div class="filter-modal-content">
+			                
+			                <div class="filter-modal-header">
+			                    <h3>เลือกหมวดหมู่ที่สนใจ</h3>
+			                    <button id="close-modal-btn" title="ปิด">&times;</button>
+			                </div>
+			                
+			                <div class="filter-modal-body" id="filter-categories-list">
+			                    <p>กำลังโหลดหมวดหมู่...</p>
+			                </div>
+			                
+			                <div class="filter-modal-footer">
+			                    <button id="apply-filter-btn" class="apply-btn">ตกลง</button>
+			                </div>
+
+			            </div>
 			</div>
     <script src="map-script.js"></script>
     <script async
