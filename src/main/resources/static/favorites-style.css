@@ -52,6 +52,7 @@ body {
 
 /* Image Placeholder */
 .card-image-placeholder {
+	
     width: 80px;
     height: 80px;
     min-width: 80px;
@@ -64,6 +65,17 @@ body {
     color: #a0a0a0;
     font-size: 2em;
     margin-right: 15px;
+	
+}
+
+.card-image {
+    width: 80px; /* ขนาดเดียวกับ placeholder /
+    height: 80px; / ขนาดเดียวกับ placeholder /
+    min-width: 80px;
+    object-fit: cover; / ทำให้รูปภาพครอบคลุมพื้นที่โดยไม่เสียสัดส่วน /
+    border-radius: 4px;
+    margin-right: 15px;
+    border: 1px solid #c0c0c0; / เพื่อให้ดูเหมือนกรอบ placeholder */
 }
 
 .card-content {

@@ -14,12 +14,60 @@ let searchTempMarker = null;
 let searchTimeout;
 const DEBOUNCE_DELAY = 300; // ms
 const API_SEARCH_SUGGESTION_URL = 'http://localhost:8080/api/locations';
+const API_BOOKMARK_URL = 'http://localhost:8080/api/bookmarks';
+
+// --- ตัวแปรเก็บสถานะ Bookmark ---
+let userBookmarks = new Set();
 
 // เริ่มทำงานเมื่อ DOM โหลดเสร็จ
 document.addEventListener('DOMContentLoaded', function() {
     setupMapControls();
     setupSearchAutocomplete();
+    fetchUserBookmarks(); // <-- ⭐️ ดึง Bookmark มาเก็บไว้ตอนโหลดหน้า
 });
+
+/**
+ * ⭐️ [NEW FUNCTION]
+ * ดึงรายการ Bookmark ของผู้ใช้มาเก็บไว้ใน 'userBookmarks' Set
+ */
+async function fetchUserBookmarks() {
+    try {
+        const response = await fetch(API_BOOKMARK_URL, {
+            method: 'GET',
+            credentials: 'include' // <-- สำคัญมาก
+        });
+
+        if (response.status === 403) {
+            console.log("User not logged in. Bookmarks disabled.");
+            userBookmarks.clear();
+            return;
+        }
+        if (!response.ok) {
+            console.error("Failed to fetch bookmarks");
+            return;
+        }
+
+        const bookmarks = await response.json();
+        userBookmarks.clear();
+        bookmarks.forEach(b => {
+            // เก็บ ID ของสถานที่ (targetId) ไว้ใน Set
+            userBookmarks.add(b.targetId);
+        });
+        console.log("User bookmarks loaded:", userBookmarks);
+
+    } catch (error) {
+        console.error("Error fetching user bookmarks:", error);
+    }
+}
+
+/**
+ * ⭐️ [NEW FUNCTION]
+ * ตรวจสอบว่าสถานที่นี้ถูก Bookmark ไว้หรือยัง
+ */
+function isBookmarked(locationId) {
+    return userBookmarks.has(locationId);
+}
+
 
 // ฟังก์ชันหลักที่ถูกเรียกโดย Google Maps API
 async function initMap() {
@@ -73,26 +121,37 @@ async function initMap() {
                 title: location.name
             });
 
-            // เก็บหมวดหมู่ของ marker ไว้สำหรับ filter
+            // เก็บ ID และ Category ของ marker ไว้
+            marker.locationId = location.id; // ⭐️
             marker.category = location.category?.category || null;
             allMarkers.push(marker);
 
             marker.addListener('click', () => {
+                
+                // ⭐️ ตรวจสอบสถานะ Bookmark
+                const isMarked = isBookmarked(location.id);
+                const bookmarkButtonHtml = `
+                    <button class="bookmark-btn ${isMarked ? 'bookmarked' : ''}" 
+                            data-location-id="${location.id}" 
+                            data-location-name="${location.name}">
+                        <i class="fa-${isMarked ? 'solid' : 'regular'} fa-bookmark"></i> 
+                        ${isMarked ? 'บันทึกแล้ว' : 'บันทึก'}
+                    </button>
+                `;
+
                 const content = `
                 <div class="place-popup">
-                    <h4>${location.name} (${location.description})</h4>
+                    <h4>${location.name}</h4>
                     <p>
                         เวลาทำการ:
                         ${(location.openTime?.trim() && location.closeTime?.trim())
                         ? `${location.openTime} - ${location.closeTime}`
                         : 'N/A'}
                     </p>
-                    <p>สถานะความหนาแน่น: <b>${location.densityStatus || 'N/A'}</b></p>
+                    
                     <div class="popup-actions">
-                        <button class="bookmark-btn" data-name="${location.name}">
-                            📌 บุ๊กมาร์ก
-                        </button>
-                        <a href="detail.html?shortName=${encodeURIComponent(location.name)}" class="details-btn">
+                        ${bookmarkButtonHtml}
+                        <a href="user/detail.html?shortName=${encodeURIComponent(location.name)}" class="details-btn">
                             ดูรายละเอียด
                         </a>
                     </div>
@@ -103,6 +162,8 @@ async function initMap() {
                     </button>
                 </div>
                 `;
+                // <p>สถานะความหนาแน่น: <b>${location.densityStatus || 'N/A'}</b></p>
+
 
                 infoWindow.setContent(content);
 
@@ -123,19 +184,14 @@ async function initMap() {
                         };
                     }
 
-                    // ปุ่มบุ๊กมาร์กใน popup
+                    // ⭐️ ปุ่มบุ๊กมาร์กใน popup
                     const bookmarkBtn = infoWindow.getContent().querySelector('.bookmark-btn');
                     if (bookmarkBtn) {
-                        bookmarkBtn.addEventListener('click', () => {
-                            const placeName = bookmarkBtn.getAttribute('data-name');
-                            alert(`กำลังบันทึก "${placeName}"...`);
-
-                            // จำลองการบันทึกสำเร็จ
-                            setTimeout(() => {
-                                alert(`✅ บันทึก "${placeName}" เป็นรายการโปรดสำเร็จแล้ว! ระบบจะนำคุณไปที่หน้ารายการโปรด`);
-                                bookmarkBtn.textContent = '✅ บุ๊กมาร์กแล้ว';
-                                window.location.href = 'favorites.html';
-                            }, 500);
+                        bookmarkBtn.addEventListener('click', (e) => {
+                            const btn = e.currentTarget;
+                            const locationId = parseInt(btn.getAttribute('data-location-id'));
+                            const locationName = btn.getAttribute('data-location-name');
+                            handleBookmarkClick(btn, locationId, locationName);
                         });
                     }
                 });
@@ -144,24 +200,66 @@ async function initMap() {
             });
         });
 
-        // Filter chips ด้านบน (ถ้ามี)
-        const allChips = document.querySelectorAll('.chip');
-        allChips.forEach(chip => {
-            chip.addEventListener('click', () => {
-                const active = document.querySelector('.chip.active');
-                if (active) active.classList.remove('active');
-                chip.classList.add('active');
-
-                const categoryName = chip.textContent.trim().replace(/^[^\wก-๙เแโใไ\s]+/, '').trim();
-                applyCategoryFilters([categoryName]);
-            });
-        });
-
     } catch (error) {
         console.error('Error fetching locations:', error);
         populateFilterModal([]); // แสดง "ไม่พบหมวดหมู่"
     }
 }
+
+/**
+ * ⭐️ [NEW FUNCTION]
+ * จัดการการคลิกปุ่ม Bookmark ใน Popup
+ */
+async function handleBookmarkClick(buttonElement, locationId, locationName) {
+    const isCurrentlyBookmarked = isBookmarked(locationId);
+    const method = isCurrentlyBookmarked ? 'DELETE' : 'POST';
+    const url = isCurrentlyBookmarked 
+        ? `${API_BOOKMARK_URL}?targetId=${locationId}&targetType=LOCATION` 
+        : API_BOOKMARK_URL;
+
+    const body = isCurrentlyBookmarked ? null : JSON.stringify({
+        targetId: locationId,
+        targetType: "LOCATION"
+    });
+
+    try {
+        const response = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: body,
+            credentials: 'include' // <-- สำคัญมาก
+        });
+
+        if (response.status === 403) {
+            alert("กรุณาเข้าสู่ระบบก่อนบันทึกรายการโปรด");
+            window.location.href = '/login.html';
+            return;
+        }
+
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error || "เกิดข้อผิดพลาด");
+        }
+
+        // อัปเดต UI และสถานะใน Set
+        if (isCurrentlyBookmarked) {
+            userBookmarks.delete(locationId);
+            buttonElement.classList.remove('bookmarked');
+            buttonElement.innerHTML = `<i class="fa-regular fa-bookmark"></i> บันทึก`;
+        } else {
+            userBookmarks.add(locationId);
+            buttonElement.classList.add('bookmarked');
+            buttonElement.innerHTML = `<i class="fa-solid fa-bookmark"></i> บันทึกแล้ว`;
+        }
+        
+        // alert(isCurrentlyBookmarked ? 'ลบออกจากรายการโปรดแล้ว' : 'บันทึกในรายการโปรดแล้ว');
+
+    } catch (error) {
+        console.error("Bookmark action failed:", error);
+        alert(`เกิดข้อผิดพลาด: ${error.message}`);
+    }
+}
+
 
 /* ---------------------------
    ตำแหน่งผู้ใช้ & Accuracy
@@ -417,15 +515,24 @@ async function fetchAndDisplayDetails(searchTerm) {
         map.setCenter(position);
         map.setZoom(17);
 
+        // ⭐️ ตรวจสอบสถานะ Bookmark
+        const isMarked = isBookmarked(locationDetails.id);
+        const bookmarkButtonHtml = `
+            <button class="bookmark-btn ${isMarked ? 'bookmarked' : ''}" 
+                    data-location-id="${locationDetails.id}" 
+                    data-location-name="${locationDetails.name}">
+                <i class="fa-${isMarked ? 'solid' : 'regular'} fa-bookmark"></i> 
+                ${isMarked ? 'บันทึกแล้ว' : 'บันทึก'}
+            </button>
+        `;
+
         const content = `
         <div class="place-popup">
-            <h4>${locationDetails.name} (${shortName})</h4>
+            <h4>${locationDetails.name}</h4>
             <p>เวลาทำการ: ${workingHours}</p>
             <div class="popup-actions">
-                <button class="bookmark-btn" data-name="${locationDetails.name}">
-                    📌 บุ๊กมาร์ก
-                </button>
-                <a href="detail.html?shortName=${encodeURIComponent(shortName)}" class="details-btn">
+                ${bookmarkButtonHtml}
+                <a href="user/detail.html?shortName=${encodeURIComponent(shortName)}" class="details-btn">
                     ดูรายละเอียด
                 </a>
             </div>
@@ -467,17 +574,14 @@ async function fetchAndDisplayDetails(searchTerm) {
                 };
             }
 
+            // ⭐️ ปุ่มบุ๊กมาร์กใน popup
             const bookmarkBtn = infoWindow.getContent().querySelector('.bookmark-btn');
             if (bookmarkBtn) {
-                bookmarkBtn.addEventListener('click', () => {
-                    const placeName = bookmarkBtn.getAttribute('data-name');
-                    alert(`กำลังบันทึก "${placeName}"...`);
-
-                    setTimeout(() => {
-                        alert(`✅ บันทึก "${placeName}" เป็นรายการโปรดสำเร็จแล้ว! ระบบจะนำคุณไปที่หน้ารายการโปรด`);
-                        bookmarkBtn.textContent = '✅ บุ๊กมาร์กแล้ว';
-                        window.location.href = 'favorites.html';
-                    }, 500);
+                bookmarkBtn.addEventListener('click', (e) => {
+                    const btn = e.currentTarget;
+                    const locationId = parseInt(btn.getAttribute('data-location-id'));
+                    const locationName = btn.getAttribute('data-location-name');
+                    handleBookmarkClick(btn, locationId, locationName);
                 });
             }
         });
@@ -554,12 +658,12 @@ function calculateAndDisplayRoute(destination) {
 
 function clearDirections() {
     if (directionsRenderer) {
-        directionsRenderer.setDirections(null);
+        directionsRenderer.setDirections(null); // ลบเส้นออกจากแผนที่
     }
 
     const infoPanel = document.getElementById('directions-panel');
     if (infoPanel) {
-        infoPanel.style.display = 'none';
+        infoPanel.style.display = 'none'; // ซ่อนกล่องข้อมูล
         infoPanel.innerHTML = '';
     }
 
@@ -572,7 +676,11 @@ function clearDirections() {
         searchTempMarker = null;
     }
 
-    showAllMarkers();
+    // ⭐️ โหลด bookmark ใหม่ทุกครั้งที่เคลียร์เส้นทาง
+    // เพื่อให้แน่ใจว่าสถานะ popup ถูกต้อง
+    fetchUserBookmarks().then(() => {
+        showAllMarkers();
+    });
 }
 
 /* ---------------------------
@@ -599,11 +707,13 @@ function populateFilterModal(categories) {
 }
 
 function applyCategoryFilters(selectedCategories) {
-    if (!selectedCategories || selectedCategories.length === 0) {
+    // ถ้าไม่มีการเลือกอะไรเลย (หรือกด "ทั้งหมด") ให้แสดงทั้งหมด
+    if (!selectedCategories || selectedCategories.length === 0 || selectedCategories.includes("All")) {
         allMarkers.forEach(marker => marker.setMap(map));
         return;
     }
-
+    
+    // ซ่อน/แสดง ตาม category ที่เลือก
     allMarkers.forEach(marker => {
         if (selectedCategories.includes(marker.category)) {
             marker.setMap(map);

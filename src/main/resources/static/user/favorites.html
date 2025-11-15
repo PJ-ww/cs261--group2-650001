@@ -46,14 +46,36 @@
 		    const favoritesList = document.getElementById('favorites-list');
 		    const emptyMessage = document.getElementById('empty-message');
 		    const API_BASE_URL = '/api/bookmarks'; 
+            const LOCATION_API_URL = 'http://localhost:8080/api/locations'; // Endpoint สำหรับดึงข้อมูลสถานที่
+            const IMAGE_BASE_URL = 'http://localhost:8080/images/'; // Base URL สำหรับรูปภาพ
+            
             let currentFavorites = []; 
+            let allPlacesMap = new Map(); // Map สำหรับเก็บ Place ID -> Place Object
 
-            const getTargetDetails = (targetId, targetType) => {
-		        const found = currentFavorites.find(f => f.targetId == targetId && f.targetType == targetType);
-                return found || { name: `รายการ ID ${targetId}` };
-		    };
-
+            // --- 1. Fetch All Places to create a lookup map ---
+            const fetchAllPlaces = async () => {
+                try {
+                    // ดึงข้อมูลสถานที่ทั้งหมด
+                    const response = await fetch(LOCATION_API_URL); 
+                    if (!response.ok) throw new Error('Failed to fetch location data');
+                    const places = await response.json();
+                    
+                    // Populate the map: {id -> placeObject}
+                    places.forEach(place => {
+                        // ใช้ String(place.id) เพื่อให้ key ตรงกัน แม้ id จะเป็น Long ใน Java
+                        allPlacesMap.set(String(place.id), place); 
+                    });
+                } catch (error) {
+                    console.error("Error fetching all places:", error);
+                }
+            };
+            
+            // --- 2. Fetch Bookmarks and map to Place Name and Image ---
 		    const fetchUserFavorites = async () => {
+		        
+                // ต้องเรียก fetchAllPlaces ก่อน
+                await fetchAllPlaces();
+                
 		        try {
 		            const response = await fetch(API_BASE_URL, {
 		                method: 'GET',
@@ -67,7 +89,28 @@
 		            }
 		            if (!response.ok) throw new Error('Failed to fetch bookmarks');
 		            
-		            currentFavorites = await response.json(); 
+		            const apiData = await response.json(); 
+                    
+                    // Map bookmark data to place details
+                    currentFavorites = apiData.map(item => {
+                        // ใช้ item.targetId ในการค้นหาชื่อจาก Map
+                        const placeDetails = allPlacesMap.get(String(item.targetId));
+                        
+                        // สร้าง URL รูปภาพ
+                        let imageUrl = null;
+                        if (placeDetails && placeDetails.imageUrl) {
+                            imageUrl = IMAGE_BASE_URL + encodeURIComponent(placeDetails.imageUrl);
+                        }
+
+                        return {
+                            ...item, // include targetId, targetType
+                            // ดึงชื่อสถานที่จริงมาใช้
+                            name: placeDetails ? placeDetails.name : `ID: ${item.targetId} (ไม่พบชื่อ)`,
+                            nameForMap: placeDetails ? placeDetails.name : null, 
+                            imageUrl: imageUrl, // ✅ เพิ่ม Image URL ที่ถูกต้อง
+                        };
+                    });
+
                     return currentFavorites;
 
 		        } catch (error) {
@@ -78,20 +121,24 @@
 		        }
 		    };
 
+            // --- 3. Render Functions ---
 		    const createFavoriteCard = (location) => {
+		        
+                // สร้าง HTML สำหรับรูปภาพ หรือ Placeholder
+                const imageHtml = location.imageUrl
+                    ? `<img src="${location.imageUrl}" alt="${location.name}" class="card-image" onerror="this.onerror=null; this.src='/images/favicon.png';">`
+                    : `<div class="card-image-placeholder"><i class="fas fa-image"></i></div>`;
+
 		        const card = document.createElement('div');
 		        card.className = 'favorite-card';
 		        card.innerHTML = `
-		            <div class="card-image-placeholder">
-		                <i class="fas fa-image"></i>
-		            </div>
-		            <div class="card-content">
+                    ${imageHtml} <div class="card-content">
 		                <div class="card-header">
-		                    <h3 class="card-title">${location.name || `ID: ${location.targetId}`}</h3>
+		                    <h3 class="card-title">${location.name}</h3>
 		                    <i class="fas fa-bookmark card-delete-icon" data-target-id="${location.targetId}" data-target-type="${location.targetType}"></i> 
 		                </div>
 		                <div class="card-actions">
-		                    <button class="map-btn" data-target-id="${location.targetId}" data-name="${location.name}">ดูแผนที่</button>
+		                    <button class="map-btn" data-name="${location.nameForMap}" data-target-id="${location.targetId}">ดูแผนที่</button>
 		                    <button class="remove-btn" data-target-id="${location.targetId}" data-target-type="${location.targetType}">ลบ</button>
 		                </div>
 		            </div>
@@ -110,12 +157,16 @@
 		            const card = createFavoriteCard(location);
 		            favoritesList.appendChild(card);
 		        });
-		        attachEventListeners(favorites);
+		        attachEventListeners();
 		    };
 		    
+            // --- 4. Event Handlers ---
 		    const handleRemoveFavorite = async (targetId, targetType) => {
-		        const details = getTargetDetails(targetId, targetType);
-                if (!confirm(`คุณต้องการลบ "${details.name}" ออกจากรายการโปรดหรือไม่?`)) return;
+		        // Find the place name for confirmation
+                const details = currentFavorites.find(f => f.targetId == targetId && f.targetType == targetType);
+                const name = details ? details.name : `รายการ ID ${targetId}`;
+
+                if (!confirm(`คุณต้องการลบ "${name}" ออกจากรายการโปรดหรือไม่?`)) return;
 
 		        try {
 		            const response = await fetch(`${API_BASE_URL}?targetId=${targetId}&targetType=${targetType}`, {
@@ -130,6 +181,7 @@
 
 		            alert("✅ ลบ Bookmark สำเร็จ");
 		            
+		            // โหลดและ Render ใหม่
 		            const newFavorites = await fetchUserFavorites();
 		            renderFavorites(newFavorites);
 
@@ -139,7 +191,7 @@
 		        }
 		    };
 
-		    const attachEventListeners = (favorites) => {
+		    const attachEventListeners = () => {
 		        document.querySelectorAll('.remove-btn, .card-delete-icon').forEach(btn => {
 		            btn.onclick = (event) => {
 		                const targetId = event.currentTarget.getAttribute('data-target-id');
@@ -150,8 +202,15 @@
 
 		        document.querySelectorAll('.map-btn').forEach(btn => {
 		            btn.onclick = (event) => {
-		                const targetName = event.currentTarget.getAttribute('data-name');
-		                window.location.href = `map.html?search=${encodeURIComponent(targetName)}`;
+		                // ใช้ data-name ที่เราเตรียมไว้ (ซึ่งก็คือชื่อสถานที่)
+		                const targetName = event.currentTarget.getAttribute('data-name'); 
+                        
+                        if (targetName) {
+                            // นำทางไปยังหน้า map และใช้ query parameter 'search' เพื่อให้ map-script.js ค้นหาและแสดง Pop-up
+		                    window.location.href = `/user/map.html?search=${encodeURIComponent(targetName)}`;
+                        } else {
+                            alert('ไม่พบชื่อสถานที่สำหรับนำทาง');
+                        }
 		            };
 		        });
 		    };
