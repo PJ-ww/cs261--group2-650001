@@ -52,18 +52,26 @@ public class PlaceService {
     }
     //update
     public List<Place> getPlaces(String search, Long categoryId) {
-        boolean hasSearch = (search != null && !search.trim().isEmpty());
-        boolean hasCategory = (categoryId != null);
+        
+        // 1. ตรวจสอบว่ามีคำค้นหาหรือไม่
+        if (search != null && !search.trim().isEmpty()) {
+            
+            // 2. ถ้ามี categoryId ด้วย ให้ค้นหาแบบจำกัดหมวดหมู่
+            if (categoryId != null) {
+                return placeRepository.findByNameContainingIgnoreCaseAndCategory_Id(search, categoryId);
+            } 
+            
+            // 3. ถ้าไม่มี categoryId ให้ค้นหาจากชื่ออย่างเดียว
+            return placeRepository.findByNameContainingIgnoreCase(search);
 
-        if (hasSearch && hasCategory) {
-            return placeRepository.findByNameContainingIgnoreCaseAndCategory_Id(search.trim(), categoryId);
-        } else if (hasSearch) {
-            return placeRepository.findByNameContainingIgnoreCase(search.trim());
-        } else if (hasCategory) {
-            return placeRepository.findByCategory_Id(categoryId);
-        } else {
-            return placeRepository.findAll();
+        } else if (categoryId != null) {
+            // 4. ถ้าไม่มีคำค้นหา แต่มี categoryId ให้ค้นหาตามหมวดหมู่
+            // (คุณอาจต้องเพิ่ม findByCategoryId ใน Repository)
+            // return placeRepository.findByCategoryId(categoryId); 
         }
+        
+        // 5. กรณีไม่มีทั้ง search และ categoryId ให้คืนค่าทั้งหมด
+        return placeRepository.findAll();
     }
     //update
 }

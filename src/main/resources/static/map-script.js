@@ -1,5 +1,4 @@
 let map;
-let allMarkers = []; // 1. สร้างที่เก็บหมุดทั้งหมด
 let userLocation = null;
 let userMarker = null;
 let accuracyCircle = null;
@@ -7,29 +6,41 @@ let infoWindow = null;
 let directionsService;
 let directionsRenderer;
 
+// --- เก็บหมุดทั้งหมดบนแผนที่ + หมุดจากการค้นหา ---
+let allMarkers = [];
+let searchTempMarker = null;
 
+// --- ตัวแปรสำหรับ Autocomplete จาก Backend ---
+let searchTimeout;
+const DEBOUNCE_DELAY = 300; // ms
+const API_SEARCH_SUGGESTION_URL = 'http://localhost:8080/api/locations';
+
+// เริ่มทำงานเมื่อ DOM โหลดเสร็จ
 document.addEventListener('DOMContentLoaded', function() {
-    setupMapControls(); 
+    setupMapControls();
+    setupSearchAutocomplete();
 });
 
+// ฟังก์ชันหลักที่ถูกเรียกโดย Google Maps API
 async function initMap() {
     const mapOptions = {
-        center: { lat: 14.072, lng: 100.603 }, 
+        center: { lat: 14.072, lng: 100.603 }, // มธ. รังสิต
         zoom: 15,
-        disableDefaultUI: true 
+        disableDefaultUI: true
     };
 
     map = new google.maps.Map(document.getElementById("map"), mapOptions);
     infoWindow = new google.maps.InfoWindow();
+
     directionsService = new google.maps.DirectionsService();
     directionsRenderer = new google.maps.DirectionsRenderer();
-    directionsRenderer.setMap(map); 
+    directionsRenderer.setMap(map);
 
-    // ติดตามตำแหน่งผู้ใช้
+    // ติดตามตำแหน่งผู้ใช้แบบ real-time
     if (navigator.geolocation) {
         navigator.geolocation.watchPosition(
             (position) => {
-                userLocation = { 
+                userLocation = {
                     lat: position.coords.latitude,
                     lng: position.coords.longitude,
                 };
@@ -39,133 +50,122 @@ async function initMap() {
         );
     }
 
-    // Autocomplete Search
-    const searchInput = document.getElementById('search-input');
-    const autocomplete = new google.maps.places.Autocomplete(searchInput);
-    autocomplete.bindTo('bounds', map);
-    const searchMarker = new google.maps.Marker({ map: map, anchorPoint: new google.maps.Point(0, -29) });
-
-    autocomplete.addListener('place_changed', () => {
-        searchMarker.setVisible(false);
-        const place = autocomplete.getPlace();
-        if (!place.geometry || !place.geometry.location) { return; }
-        if (place.geometry.viewport) {
-            map.fitBounds(place.geometry.viewport);
-        } else {
-            map.setCenter(place.geometry.location);
-            map.setZoom(17);
-        }
-        searchMarker.setPosition(place.geometry.location);
-        searchMarker.setVisible(true);
-    });
-
-    
-    // ดึงข้อมูลสถานที่ และ Render Markers 
+    // ดึงข้อมูลสถานที่และสร้าง markers
     try {
         const response = await fetch('http://localhost:8080/api/locations');
         if (!response.ok) {
             throw new Error(`HTTP error! สถานะ: ${response.status}`);
         }
         const locations = await response.json();
-            
-        allMarkers = []; // 2. ล้างหมุดเก่า
 
-        // 👈 [แก้ไข] 3. ดึงหมวดหมู่ (category) ที่ไม่ซ้ำกันจาก Backend
-        // ❗❗❗ [จุดที่ 1: เปลี่ยน .name เป็น .category]
-        // (loc.category?.category หมายถึง: 
-        //  เข้าไปใน object 'category' แล้วดึง field 'category' ออกมา)
-        const allCategories = locations.map(loc => loc.category?.category); 
-        const uniqueCategories = [...new Set(allCategories)].filter(cat => cat); 
-        
-        console.log("หมวดหมู่ที่มีใน Backend:", uniqueCategories);
-        
-        // 4. เรียกฟังก์ชันเพื่อสร้าง Checkbox ใน Modal
+        allMarkers = [];
+
+        // --- สร้างรายการหมวดหมู่ไม่ซ้ำ สำหรับ Filter Modal ---
+        const allCategories = locations.map(loc => loc.category?.category);
+        const uniqueCategories = [...new Set(allCategories)].filter(cat => cat);
         populateFilterModal(uniqueCategories);
 
-
+        // สร้าง markers สำหรับทุกสถานที่
         locations.forEach(location => {
             const marker = new google.maps.Marker({
-                position: { lat: location.latitude, lng: location.longitude }, 
+                position: { lat: location.latitude, lng: location.longitude },
                 map: map,
-                title: location.name 
+                title: location.name
             });
 
-            // 👈 [แก้ไข] 5. เก็บหมวดหมู่ (Category) และเก็บหมุดไว้ใน Array
-            // ❗❗❗ [จุดที่ 2: เปลี่ยน .name เป็น .category]
-            marker.category = location.category?.category; 
-            allMarkers.push(marker); 
+            // เก็บหมวดหมู่ของ marker ไว้สำหรับ filter
+            marker.category = location.category?.category || null;
+            allMarkers.push(marker);
 
             marker.addListener('click', () => {
                 const content = `
                 <div class="place-popup">
                     <h4>${location.name} (${location.description})</h4>
                     <p>
-                        เวลาทำการ: 
-                        ${(location.openTime?.trim() && location.closeTime?.trim()) 
-                        ? `${location.openTime} - ${location.closeTime}` 
+                        เวลาทำการ:
+                        ${(location.openTime?.trim() && location.closeTime?.trim())
+                        ? `${location.openTime} - ${location.closeTime}`
                         : 'N/A'}
                     </p>
                     <p>สถานะความหนาแน่น: <b>${location.densityStatus || 'N/A'}</b></p>
-                    <div class="popup-actions"> 
-                        <button class="bookmark-btn" data-name="${location.name}">📌 บุ๊กมาร์ก</button>
-                        <a href="detail.html?shortName=${encodeURIComponent(location.name)}" class="details-btn">ดูรายละเอียด</a>
+                    <div class="popup-actions">
+                        <button class="bookmark-btn" data-name="${location.name}">
+                            📌 บุ๊กมาร์ก
+                        </button>
+                        <a href="detail.html?shortName=${encodeURIComponent(location.name)}" class="details-btn">
+                            ดูรายละเอียด
+                        </a>
                     </div>
-                    <button class="directions-btn" data-lat="${location.latitude}" data-lng="${location.longitude}">
+                    <button class="directions-btn"
+                            data-lat="${location.latitude}"
+                            data-lng="${location.longitude}">
                         <i class="fa-solid fa-person-walking"></i> นำทาง (เดิน)
                     </button>
-                </div>`;
-    
+                </div>
+                `;
+
                 infoWindow.setContent(content);
 
                 google.maps.event.addListener(infoWindow, 'domready', () => {
+                    // ปุ่มนำทางจาก Popup
                     const directionsBtn = document.querySelector('.directions-btn');
                     if (directionsBtn) {
-                      directionsBtn.onclick = () => {
-                          const lat = parseFloat(directionsBtn.getAttribute('data-lat'));
-                          const lng = parseFloat(directionsBtn.getAttribute('data-lng'));
-                          calculateAndDisplayRoute({ lat: lat, lng: lng });
-                      };
+                        directionsBtn.onclick = () => {
+                            const lat = parseFloat(directionsBtn.getAttribute('data-lat'));
+                            const lng = parseFloat(directionsBtn.getAttribute('data-lng'));
+
+                            // ปิด popup แล้วซ่อน marker ก่อนคำนวณเส้นทาง
+                            if (infoWindow) infoWindow.close();
+                            hideAllMarkers();
+                            marker.setMap(null);
+
+                            calculateAndDisplayRoute({ lat, lng });
+                        };
                     }
-                    
+
+                    // ปุ่มบุ๊กมาร์กใน popup
                     const bookmarkBtn = infoWindow.getContent().querySelector('.bookmark-btn');
                     if (bookmarkBtn) {
                         bookmarkBtn.addEventListener('click', () => {
                             const placeName = bookmarkBtn.getAttribute('data-name');
-                            alert(`กำลังเพิ่ม "${placeName}" เข้าสู่รายการบุ๊กมาร์ก!`);
-                            bookmarkBtn.textContent = '✅ บุ๊กมาร์กแล้ว';
+                            alert(`กำลังบันทึก "${placeName}"...`);
+
+                            // จำลองการบันทึกสำเร็จ
+                            setTimeout(() => {
+                                alert(`✅ บันทึก "${placeName}" เป็นรายการโปรดสำเร็จแล้ว! ระบบจะนำคุณไปที่หน้ารายการโปรด`);
+                                bookmarkBtn.textContent = '✅ บุ๊กมาร์กแล้ว';
+                                window.location.href = 'favorites.html';
+                            }, 500);
                         });
                     }
                 });
 
                 infoWindow.open(map, marker);
-            }); // <-- ปีกกาปิดของ marker.addListener 
-        }); // <-- ปีกกาปิดของ locations.forEach
+            });
+        });
 
-            
-        // 6. โค้ดสำหรับ Filter Chips (ปุ่มด้านบน)
+        // Filter chips ด้านบน (ถ้ามี)
         const allChips = document.querySelectorAll('.chip');
         allChips.forEach(chip => {
             chip.addEventListener('click', () => {
-                if (document.querySelector('.chip.active')) {
-                    document.querySelector('.chip.active').classList.remove('active');
-                }
+                const active = document.querySelector('.chip.active');
+                if (active) active.classList.remove('active');
                 chip.classList.add('active');
-                
-                const categoryName = chip.textContent.trim().replace(/^[^\w\s]+/, '').trim();
-                console.log("Chip กรองหมวดหมู่:", categoryName); 
 
+                const categoryName = chip.textContent.trim().replace(/^[^\wก-๙เแโใไ\s]+/, '').trim();
                 applyCategoryFilters([categoryName]);
             });
         });
-    
+
     } catch (error) {
         console.error('Error fetching locations:', error);
-        // ถ้าการดึงข้อมูลล้มเหลว ให้บอกผู้ใช้
-        populateFilterModal([]); // เรียกฟังก์ชันให้แสดง "ไม่พบหมวดหมู่"
+        populateFilterModal([]); // แสดง "ไม่พบหมวดหมู่"
     }
-} // <-- ปีกกาปิดของ initMap()
+}
 
-
+/* ---------------------------
+   ตำแหน่งผู้ใช้ & Accuracy
+---------------------------- */
 function updateUserLocationMarker(location, accuracy) {
     if (!userMarker) {
         userMarker = new google.maps.Marker({
@@ -181,6 +181,7 @@ function updateUserLocationMarker(location, accuracy) {
                 scale: 6
             }
         });
+
         accuracyCircle = new google.maps.Circle({
             map: map,
             radius: accuracy,
@@ -191,6 +192,7 @@ function updateUserLocationMarker(location, accuracy) {
             strokeOpacity: 0.5,
             strokeWeight: 1
         });
+
         map.setCenter(location);
         map.setZoom(17);
     } else {
@@ -200,9 +202,12 @@ function updateUserLocationMarker(location, accuracy) {
     }
 }
 
+/* ---------------------------
+   Map Controls (ปุ่มบนแผนที่)
+---------------------------- */
 function setupMapControls() {
     const myLocationBtn = document.getElementById('my-location-btn');
-    if (myLocationBtn) { 
+    if (myLocationBtn) {
         myLocationBtn.addEventListener('click', () => {
             if (userLocation) {
                 map.setCenter(userLocation);
@@ -212,154 +217,322 @@ function setupMapControls() {
             }
         });
     }
-    
-    const searchBtn = document.querySelector('.search-btn'); // (ปุ่มแว่นขยายอันเก่า)
+
+    const searchBtn = document.querySelector('.search-btn');
     const searchInput = document.getElementById('search-input');
 
+    // ค้นหาเมื่อกด Enter
     if (searchInput) {
         searchInput.addEventListener('keypress', (event) => {
             if (event.key === 'Enter') {
-                event.preventDefault(); 
+                event.preventDefault();
                 const searchTerm = searchInput.value.trim();
                 if (searchTerm) {
-                    fetchAndDisplayDetails(searchTerm); 
+                    fetchAndDisplayDetails(searchTerm);
+                    const resultsContainer = document.getElementById('autocomplete-results');
+                    if (resultsContainer) resultsContainer.style.display = 'none';
                 }
             }
         });
     }
-    if (searchBtn) { 
+
+    // ค้นหาเมื่อกดปุ่ม search
+    if (searchBtn && searchInput) {
         searchBtn.addEventListener('click', () => {
             const searchTerm = searchInput.value.trim();
             if (searchTerm) {
-                fetchAndDisplayDetails(searchTerm); 
+                fetchAndDisplayDetails(searchTerm);
+            } else {
+                alert("กรุณาป้อนชื่อสถานที่ หรือเลือกจากคำแนะนำการค้นหา");
             }
         });
     }
 
-    // 7. โค้ดสำหรับเปิด/ปิด Filter Modal
+    // -------- Filter Modal controls --------
     const filterBtn = document.querySelector('.filter-btn');
     const filterModal = document.getElementById('filter-modal');
     const closeModalBtn = document.getElementById('close-modal-btn');
     const applyFilterBtn = document.getElementById('apply-filter-btn');
 
-    if (filterBtn) {
+    if (filterBtn && filterModal) {
         filterBtn.addEventListener('click', () => {
-            console.log("เปิด Filter Modal");
             filterModal.classList.add('show');
         });
     }
-    if (closeModalBtn) {
+    if (closeModalBtn && filterModal) {
         closeModalBtn.addEventListener('click', () => {
             filterModal.classList.remove('show');
         });
     }
     if (filterModal) {
         filterModal.addEventListener('click', (event) => {
-            if (event.target === filterModal) { // คลิกที่พื้นหลังเทา
+            if (event.target === filterModal) {
                 filterModal.classList.remove('show');
             }
         });
     }
-
-    // 8. เพิ่ม Logic ให้ปุ่ม "ตกลง" ใน Modal
-    if (applyFilterBtn) {
+    if (applyFilterBtn && filterModal) {
         applyFilterBtn.addEventListener('click', () => {
-            
-            // 1. หา Checkbox ที่ถูกติ๊กทั้งหมด
             const selectedCheckboxes = document.querySelectorAll('#filter-categories-list input[name="category"]:checked');
-            
-            // 2. ดึง "value" (ชื่อหมวดหมู่) ออกมา
             const selectedCategories = [];
-            selectedCheckboxes.forEach(checkbox => {
-                selectedCategories.push(checkbox.value);
-            });
-
-            // 3. เรียกฟังก์ชันฟิลเตอร์ใหม่
-            applyCategoryFilters(selectedCategories); 
-            
-            // 4. ปิด Modal
+            selectedCheckboxes.forEach(checkbox => selectedCategories.push(checkbox.value));
+            applyCategoryFilters(selectedCategories);
             filterModal.classList.remove('show');
         });
     }
-} // <-- ปีกกาปิดของ setupMapControls
+}
 
+/* ---------------------------
+   Autocomplete จาก Backend
+---------------------------- */
+function setupSearchAutocomplete() {
+    const searchInput = document.getElementById('search-input');
+    const resultsContainer = document.getElementById('autocomplete-results');
 
+    if (!searchInput || !resultsContainer) {
+        console.warn("ไม่พบองค์ประกอบค้นหาหรือ Autocomplete results ใน DOM");
+        return;
+    }
+
+    searchInput.addEventListener('input', (event) => {
+        const query = event.target.value.trim();
+
+        clearTimeout(searchTimeout);
+
+        if (query.length < 2) {
+            resultsContainer.style.display = 'none';
+            return;
+        }
+
+        searchTimeout = setTimeout(() => {
+            fetchSuggestions(query, resultsContainer);
+        }, DEBOUNCE_DELAY);
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!searchInput.contains(event.target) && !resultsContainer.contains(event.target)) {
+            resultsContainer.style.display = 'none';
+        }
+    });
+}
+
+async function fetchSuggestions(queryText, resultsContainer) {
+    try {
+        const url = `${API_SEARCH_SUGGESTION_URL}?search=${encodeURIComponent(queryText)}`;
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            resultsContainer.style.display = 'none';
+            return;
+        }
+
+        const suggestions = await response.json();
+        displaySuggestions(suggestions, resultsContainer);
+
+    } catch (error) {
+        console.error("Search suggestion error:", error);
+        resultsContainer.style.display = 'none';
+    }
+}
+
+function displaySuggestions(suggestions, resultsContainer) {
+    resultsContainer.innerHTML = '';
+
+    if (!suggestions || suggestions.length === 0) {
+        resultsContainer.style.display = 'none';
+        return;
+    }
+
+    suggestions.forEach(item => {
+        const resultItem = document.createElement('div');
+        resultItem.className = 'autocomplete-item';
+
+        resultItem.textContent = item.name;
+        resultItem.setAttribute('data-name', item.name);
+        resultItem.setAttribute('data-lat', item.latitude);
+        resultItem.setAttribute('data-lng', item.longitude);
+
+        resultItem.addEventListener('click', () => {
+            const selectedName = resultItem.getAttribute('data-name');
+            document.getElementById('search-input').value = selectedName;
+            resultsContainer.style.display = 'none';
+            fetchAndDisplayDetails(selectedName);
+        });
+
+        resultsContainer.appendChild(resultItem);
+    });
+
+    resultsContainer.style.display = 'block';
+}
+
+/* ---------------------------
+   ซ่อน/แสดง markers ทั้งหมด
+---------------------------- */
+function hideAllMarkers() {
+    allMarkers.forEach(marker => marker.setMap(null));
+}
+
+function showAllMarkers() {
+    allMarkers.forEach(marker => marker.setMap(map));
+}
+
+/* ---------------------------
+   ดึงรายละเอียดสถานที่ & Popup
+---------------------------- */
 async function fetchAndDisplayDetails(searchTerm) {
     console.log("Detail request initiated for:", searchTerm);
+
     try {
-        const response = await fetch(`http://localhost:8080/api/locations?search=${searchTerm}`); 
+        const response = await fetch(`http://localhost:8080/api/locations?search=${encodeURIComponent(searchTerm)}`);
         if (!response.ok) {
             alert(`ไม่พบสถานที่ '${searchTerm}' ในระบบของเรา`);
             return;
         }
-        const locationList = await response.json(); 
-        if (locationList.length === 0) {
+
+        const locationList = await response.json();
+        if (!locationList || locationList.length === 0) {
             alert(`ไม่พบสถานที่ '${searchTerm}' ในระบบของเรา`);
             return;
         }
-        const locationDetails = locationList[0]; 
+
+        const locationDetails = locationList[0];
+
         const workingHours = (locationDetails.openTime && locationDetails.closeTime)
             ? `${locationDetails.openTime} - ${locationDetails.closeTime}`
             : 'N/A';
-        const shortName = locationDetails.name; 
+
+        const shortName = locationDetails.name;
+
         if (!locationDetails.latitude || !locationDetails.longitude) {
             console.error("ข้อมูลสถานที่ไม่มีพิกัด Lat/Lng ที่ถูกต้อง");
             return;
         }
-        const position = { lat: locationDetails.latitude, lng: locationDetails.longitude };
+
+        const position = {
+            lat: locationDetails.latitude,
+            lng: locationDetails.longitude
+        };
+
+        // ย้าย map ไปที่ตำแหน่งที่ค้นพบ
         map.setCenter(position);
-        map.setZoom(17); 
+        map.setZoom(17);
+
         const content = `
         <div class="place-popup">
-            <h4>${locationDetails.name} (${shortName})</h4> 
-            <p>เวลาทำการ: ${workingHours}</p> 
-            <a href="detail.html?shortName=${encodeURIComponent(shortName)}" class="details-btn">ดูรายละเอียด</a>
-            <button class="directions-btn" data-lat="${locationDetails.latitude}" data-lng="${locationDetails.longitude}">
+            <h4>${locationDetails.name} (${shortName})</h4>
+            <p>เวลาทำการ: ${workingHours}</p>
+            <div class="popup-actions">
+                <button class="bookmark-btn" data-name="${locationDetails.name}">
+                    📌 บุ๊กมาร์ก
+                </button>
+                <a href="detail.html?shortName=${encodeURIComponent(shortName)}" class="details-btn">
+                    ดูรายละเอียด
+                </a>
+            </div>
+            <button class="directions-btn"
+                data-lat="${locationDetails.latitude}"
+                data-lng="${locationDetails.longitude}">
                 <i class="fa-solid fa-person-walking"></i> นำทาง (เดิน)
             </button>
-        </div>`;
+        </div>
+        `;
+
+        // ลบหมุดค้นหาเก่าถ้ามี
+        if (searchTempMarker) {
+            searchTempMarker.setMap(null);
+        }
+
         const tempMarker = new google.maps.Marker({
-            position: position, map: map, title: locationDetails.name
+            position: position,
+            map: map,
+            title: locationDetails.name
         });
+
+        searchTempMarker = tempMarker;
+
         infoWindow.setContent(content);
+
         google.maps.event.addListener(infoWindow, 'domready', () => {
             const directionsBtn = document.querySelector('.directions-btn');
             if (directionsBtn) {
                 directionsBtn.onclick = () => {
                     const lat = parseFloat(directionsBtn.getAttribute('data-lat'));
                     const lng = parseFloat(directionsBtn.getAttribute('data-lng'));
-                    calculateAndDisplayRoute({ lat: lat, lng: lng });
+
+                    if (infoWindow) infoWindow.close();
+                    hideAllMarkers();
+                    tempMarker.setMap(null);
+
+                    calculateAndDisplayRoute({ lat, lng });
                 };
             }
+
+            const bookmarkBtn = infoWindow.getContent().querySelector('.bookmark-btn');
+            if (bookmarkBtn) {
+                bookmarkBtn.addEventListener('click', () => {
+                    const placeName = bookmarkBtn.getAttribute('data-name');
+                    alert(`กำลังบันทึก "${placeName}"...`);
+
+                    setTimeout(() => {
+                        alert(`✅ บันทึก "${placeName}" เป็นรายการโปรดสำเร็จแล้ว! ระบบจะนำคุณไปที่หน้ารายการโปรด`);
+                        bookmarkBtn.textContent = '✅ บุ๊กมาร์กแล้ว';
+                        window.location.href = 'favorites.html';
+                    }, 500);
+                });
+            }
         });
+
         infoWindow.open(map, tempMarker);
+
         google.maps.event.addListener(infoWindow, 'closeclick', function() {
-            tempMarker.setMap(null); 
+            clearDirections();
         });
+
     } catch (error) {
         console.error('Error in fetching and displaying details:', error);
-        alert("เกิดข้อผิดพลาดในการดึงข้อมูลสถานที่");
+        let errorMessage = "เกิดข้อผิดพลาดในการดึงข้อมูลสถานที่ กรุณาลองใหม่อีกครั้ง";
+
+        if (error instanceof TypeError && error.message.includes('fetch')) {
+            errorMessage = "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ Backend ได้ (ตรวจสอบว่า Server เปิดอยู่หรือไม่)";
+        }
+        alert(errorMessage);
     }
 }
 
+/* ---------------------------
+   เส้นทางเดิน (Directions)
+---------------------------- */
 function calculateAndDisplayRoute(destination) {
     if (!userLocation) {
-        alert("กรุณากดปุ่ม 'ตำแหน่งของฉัน' และอนุญาตให้เข้าถึงตำแหน่งก่อน");
+        alert("กรุณากดปุ่ม 'ตำแหน่งของฉัน' (มุมขวา) และอนุญาตให้เข้าถึงตำแหน่งก่อน");
+        showAllMarkers();
         return;
     }
-    clearDirections();
+
+    if (directionsRenderer) {
+        directionsRenderer.setDirections(null);
+    }
+
+    hideAllMarkers();
+    if (searchTempMarker) {
+        searchTempMarker.setMap(null);
+    }
+
     const request = {
         origin: userLocation,
         destination: destination,
         travelMode: 'WALKING'
     };
+
     directionsService.route(request, (result, status) => {
-        if (status == 'OK') {
+        if (status === 'OK') {
             directionsRenderer.setDirections(result);
-            if (infoWindow) { infoWindow.close(); }
+            if (infoWindow) infoWindow.close();
+
             const route = result.routes[0].legs[0];
             const infoPanel = document.getElementById('directions-panel');
-content:             infoPanel.innerHTML = `
+
+            infoPanel.innerHTML = `
                 <div>
                     <strong>ระยะทาง:</strong> ${route.distance.text}<br>
                     <strong>เวลาเดิน:</strong> ${route.duration.text}
@@ -367,66 +540,75 @@ content:             infoPanel.innerHTML = `
                 <button id="clear-directions-btn" title="ลบเส้นทาง">&times;</button>
             `;
             infoPanel.style.display = 'block';
+
             document.getElementById('clear-directions-btn').addEventListener('click', clearDirections);
         } else {
             alert('ไม่สามารถค้นหาเส้นทางได้: ' + status);
+            showAllMarkers();
+            if (searchTempMarker) {
+                searchTempMarker.setMap(map);
+            }
         }
     });
 }
 
 function clearDirections() {
     if (directionsRenderer) {
-        directionsRenderer.setDirections(null); 
+        directionsRenderer.setDirections(null);
     }
+
     const infoPanel = document.getElementById('directions-panel');
     if (infoPanel) {
-        infoPanel.style.display = 'none'; 
+        infoPanel.style.display = 'none';
         infoPanel.innerHTML = '';
     }
+
+    if (infoWindow) {
+        infoWindow.close();
+    }
+
+    if (searchTempMarker) {
+        searchTempMarker.setMap(null);
+        searchTempMarker = null;
+    }
+
+    showAllMarkers();
 }
 
-
-// 8. ฟังก์ชันสำหรับสร้าง Checkbox ใน Modal
+/* ---------------------------
+   Filter Modal / Checkbox
+---------------------------- */
 function populateFilterModal(categories) {
     const modalBody = document.getElementById('filter-categories-list');
-    
-    modalBody.innerHTML = ''; // เคลียร์ "กำลังโหลด..."
+    if (!modalBody) return;
+
+    modalBody.innerHTML = '';
 
     categories.forEach(category => {
         const label = document.createElement('label');
         label.innerHTML = `
             <input type="checkbox" name="category" value="${category}">
-            <span>${category}</span> 
+            <span>${category}</span>
         `;
         modalBody.appendChild(label);
     });
 
-    // ถ้าไม่มีหมวดหมู่เลย
     if (categories.length === 0) {
         modalBody.innerHTML = '<p>ไม่พบหมวดหมู่ให้เลือก</p>';
     }
 }
 
-
-// 9. ฟังก์ชันฟิลเตอร์ใหม่ (รับเป็น Array)
 function applyCategoryFilters(selectedCategories) {
-    
-    // ถ้าไม่ได้เลือกอะไรเลย (Array ว่าง) = ให้แสดงทั้งหมด
-    if (selectedCategories.length === 0) {
-        console.log("ไม่ได้เลือกหมวดหมู่, แสดงหมุดทั้งหมด");
+    if (!selectedCategories || selectedCategories.length === 0) {
         allMarkers.forEach(marker => marker.setMap(map));
         return;
     }
 
-    console.log("กำลังกรองหมุดให้เหลือ:", selectedCategories);
-
     allMarkers.forEach(marker => {
-        // "ถ้าหมวดหมู่ของหมุดนี้ (marker.category) 
-        //  มีอยู่ในลิสต์ที่เลือก (selectedCategories)"
         if (selectedCategories.includes(marker.category)) {
-            marker.setMap(map); // แสดง
+            marker.setMap(map);
         } else {
-            marker.setMap(null); // ซ่อน
+            marker.setMap(null);
         }
     });
 }

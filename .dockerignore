@@ -1,0 +1,25 @@
+# Ignore build artifacts
+target/
+bin/
+
+# Ignore Git files
+.git/
+.gitignore
+
+# Ignore IDE and OS files
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.settings/
+.classpath
+.factorypath
+.project
+.DS_Store
+
+# Ignore Maven wrapper for Windows
+mvnw.cmd
+
+# Ignore documentation
+README.md
