@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Profile - Logged In (User)</title>
-  <link rel="stylesheet" href="/login_style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - Logged In</title>
+
+  <!-- CSS ของ user profile (อยู่ที่ static/login_style.css) -->
+  <link rel="stylesheet" href="/login_style.css">
+
+  <!-- Font Awesome 5 (รองรับ fas) -->
   <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-  <link rel="icon" type="image/png" href="/images/favicon.png" />
-  
-  <script type="module">
-      import { protectPage } from "/authGuard.js";
-      protectPage(); 
-  </script>
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+  <!-- favicon จาก /static/images -->
+  <link rel="icon" type="image/png" href="/images/favicon.png">
 </head>
 
 <body>
@@ -42,65 +43,89 @@
     </div>
   </main>
 
-  <footer class="bottom-nav">
-     <a href="/user/map.html" class="nav-item" id="homeButton">
-       <i class="fas fa-home"></i><span>Home</span>
-     </a>
-     <a href="/user/favorites.html" class="nav-item" id="favoriteButton">
-       <i class="fas fa-bookmark"></i><span>Favorites</span>
-     </a>
-     <a href="/user/profile_logged_in.html" class="nav-item active" id="profileButton">
-       <i class="fas fa-user"></i><span>Profile</span>
-     </a>
-   </footer>
+  <!-- ⭐ Dynamic navbar -->
+  <footer class="bottom-nav" id="bottom-nav"></footer>
 
-   <script>
-       // --- FIX 2: Moved goBack() function to the global scope ---
-       // ปุ่ม back
-       function goBack() {
-         window.history.back();
-       }
+  <!-- ⭐ User-only page (ไม่ใช่ admin) -->
+  <script type="module">
+    import { protectPage } from "../authGuard.js";
+    protectPage(false);
+  </script>
 
-       // --- FIX 2: Moved logout() function to the global scope ---
-       // Logout
-       async function logout() {
-         try {
-           // 1. Tell the server to destroy the session
-           await fetch("/api/logout", {
-             method: "POST",
-             credentials: "include" // This is important to send the cookie
-           });
+  <!-- โหลดข้อมูลโปรไฟล์ขึ้นบนหน้า -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const userData = localStorage.getItem("student_info");
 
-         } catch (error) {
-           console.error("Error during logout:", error);
-         } finally {
-           // 2. ALWAYS clear local storage and redirect
-           localStorage.clear();
-           window.location.href = "/login.html";
-         }
-       }
+      if (!userData) {
+        window.location.href = "login.html";
+        return;
+      }
 
-       document.addEventListener("DOMContentLoaded", () => {
-         // โหลดข้อมูลผู้ใช้จาก localStorage
-         const userData = localStorage.getItem("student_info");
+      const parsed = JSON.parse(userData);
+      const data = parsed.data ? parsed.data : parsed;
 
-         if (userData) {
-           const parsed = JSON.parse(userData);
-           const data = parsed.data ? parsed.data : parsed;
+      document.getElementById("username").textContent =
+        data.displayname_en || data.displayname_th || "Unknown User";
 
-           document.getElementById("username").textContent =
-             data.displayname_en || data.displayname_th || data.userName || "Unknown User";
+      document.getElementById("email").textContent =
+        data.email || (data.userName ? data.userName + "@dome.tu.ac.th" : "");
+    });
 
-           document.getElementById("email").textContent =
-             data.email || (data.userName ? data.userName + "@dome.tu.ac.th" : "");
-   		  
-         } else {
-           // ถ้าไม่มีข้อมูล → กลับไปหน้า login
-           window.location.href = "/login.html";
-           return;
-         }
-         
-       }); // <-- FIX 1: Added the missing closing }); for the listener
-     </script>
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    function goBack() {
+      window.history.back();
+    }
+  </script>
+
+  <!-- ⭐ Navbar Script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const navbar = `
+        <a class="nav-item" id="homeButton">
+          <i class="fas fa-home"></i>
+          <span>Home</span>
+        </a>
+
+        <a class="nav-item" id="favoriteButton">
+          <i class="fas fa-bookmark"></i>
+          <span>Favorites</span>
+        </a>
+
+        <a class="nav-item active" id="profileButton">
+          <i class="fas fa-user"></i>
+          <span id="profileLabel">Profile</span>
+        </a>
+      `;
+
+      document.getElementById("bottom-nav").innerHTML = navbar;
+
+      // ลิงก์ navbar
+      homeButton.onclick = () => location.href = "map.html";
+      favoriteButton.onclick = () => location.href = "favorites.html";
+      profileButton.onclick = () => location.href = "profile_logged_in.html";
+
+      // เปลี่ยน "Profile" → first name จาก data.displayname_en
+      const student = localStorage.getItem("student_info");
+      if (student) {
+        try {
+          const obj = JSON.parse(student);
+          const data = obj.data ? obj.data : obj;
+
+          if (data.displayname_en) {
+            const firstName = data.displayname_en.split(" ")[0];
+            profileLabel.textContent = firstName;
+          }
+        } catch (e) {
+          console.log("Error parsing student_info:", e);
+        }
+      }
+    });
+  </script>
+
 </body>
 </html>
