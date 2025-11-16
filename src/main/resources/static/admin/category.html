@@ -110,6 +110,29 @@
 				  protectPage(true); // 🧩 บังคับเฉพาะ admin
 	</script>
 
+	<script>
+	document.addEventListener("DOMContentLoaded", () => {
+
+	    const raw = localStorage.getItem("student_info");
+	    if (!raw) return;
+
+	    try {
+	        const parsed = JSON.parse(raw);
+	        const data = parsed.data ? parsed.data : parsed;
+
+	        // ✔ ถ้ามีชื่อ ให้แทนคำว่า Profile
+	        if (data.displayname_en) {
+	            const firstName = data.displayname_en.split(" ")[0];
+	            const navLabel = document.querySelector(".bottom-nav .nav-item:last-child span");
+	            if (navLabel) navLabel.textContent = firstName;
+	        }
+
+	    } catch (err) {
+	        console.error("Error reading admin user", err);
+	    }
+
+	});
+	</script>
 
 </body>
 </html>
