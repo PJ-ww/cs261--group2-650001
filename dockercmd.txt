@@ -1,2 +1,5 @@
 docker build -t tu-compass-app .
 docker run -d -p 8080:8080 --name tucompass tu-compass-app
+
+#for docker-compose.yml
+docker-compose up -d --build

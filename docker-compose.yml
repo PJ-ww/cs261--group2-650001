@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  
+  # Service 1: Your tu-compass Spring Boot App
+  app:
+    image: tu-compass-app
+    build: .  # Tells compose to build the image from the Dockerfile in this folder
+    ports:
+      - "8080:8080"  # Map host port 8080 to container port 8080
+    environment:
+      # These variables OVERRIDE your application.properties
+      # This tells your app to connect to the 'db' service instead of 'localhost'
+      - SPRING_DATASOURCE_URL=jdbc:sqlserver://db;databaseName=TUCompass;encrypt=true;trustServerCertificate=true;useUnicode=true;characterEncoding=UTF-8
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=YourStrong@Passw0rd
+    depends_on:
+      - db  # Tells this service to wait for the 'db' service to start
+
+  # Service 2: Your SQL Server Database
+  db:
+    image: my-mssql-image:latest  # The image from your screenshot
+    ports:
+      - "1433:1433"  # Map host port 1433 to container port 1433
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrong@Passw0rd  # This MUST match the password your app uses
