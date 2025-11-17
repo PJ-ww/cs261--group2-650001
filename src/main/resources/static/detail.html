@@ -9,8 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-	<link rel="icon" type="image/png" href="images/favicon.png">
-    <link rel="stylesheet" href="detail-style.css">
+	<link rel="icon" type="image/png" href="/images/favicon.png">
+    <link rel="stylesheet" href="../detail-style.css">
 </head>
 <body>
     <div class="page-container">
@@ -45,11 +45,6 @@
 
                 <hr class="info-separator">
 
-                <!--<div class="density-status">
-                    <p><strong>สถานะปัจจุบัน:</strong></p>
-                    <div class="density-level-box" id="density-status-box">...</div>
-                </div>-->
-
                 <div class="description-block">
                     <h2>เวลาเปิด-ปิดทำการ</h2>
                     <div class="schedule-detail">
@@ -61,15 +56,14 @@
                     <p class="full-description-text" id="full-description-text">...</p>
                 </div>
      
-                <button class="cta-button" id="map-navigate-btn">ดูแผนที่และนำทาง</button>
+                <button class="cta-button">ดูแผนที่และนำทาง</button>
 
             </section>
         </main>
     </div>
 
-<!-- ✅ FIX: ลบ <script src="map-script.js"></script> ที่ขัดแย้งกันออก -->
+<script src="../map-script.js"></script>
 
-<!-- ✅ FIX: แก้ไข Script ด้านล่างนี้ให้ถูกต้อง -->
 <script>
     const API_BASE_URL = 'http://localhost:8080/api/locations';
     const BOOKMARK_API_URL = 'http://localhost:8080/api/bookmarks'; 
@@ -200,18 +194,21 @@
 
             document.getElementById('full-description-text').textContent = descriptionText;
         
-            // 5. จัดการ Bookmark Logic
-            // ✅ FIX: ตรวจสอบ token จาก localStorage ก่อน
+            // 5. ⛔️ [แก้ไข] จัดการ Bookmark Logic
             const token = localStorage.getItem("tu_token"); 
             
+            // แสดงปุ่ม Bookmark เสมอ
+            bookmarkIconContainer.style.display = 'block';
+
             if (currentTargetId && token) {
-                // ถ้ามี ID สถานที่ และ มี Token (ล็อกอินอยู่) -> ให้แสดงปุ่ม
-                bookmarkIconContainer.style.display = 'block';
+                // ถ้ามี ID สถานที่ และ มี Token (ล็อกอินอยู่) -> ให้ใช้ฟังก์ชัน handleBookmarkClick (ที่เรียก API)
                 bookmarkIconContainer.addEventListener('click', handleBookmarkClick);
                 checkInitialBookmarkStatus(currentTargetId); 
             } else {
-                // ถ้าไม่มี ID หรือ ไม่มี Token (เป็น Guest) -> ซ่อนปุ่ม
-                bookmarkIconContainer.style.display = 'none';
+                // ถ้าไม่มี ID หรือ ไม่มี Token (เป็น Guest) -> ให้แสดง Alert
+                bookmarkIconContainer.addEventListener('click', () => {
+                    alert('กรุณาเข้าสู่ระบบก่อนดำเนินการ');
+                });
             }
 
             // 6. เพิ่ม Event ให้ปุ่มนำทาง
@@ -229,8 +226,7 @@
     }
 
     /**
-     * จัดการการคลิกไอคอน Bookmark
-     * (แก้ไขให้ใช้ credentials: 'include' และตัด DUMMY_USER_ID)
+     * จัดการการคลิกไอคอน Bookmark (สำหรับ User ที่ Login แล้ว)
      */
     async function handleBookmarkClick(event) {
         event.preventDefault();
@@ -250,7 +246,7 @@
         } else {
             method = 'POST';
             apiUrl = BOOKMARK_API_URL;
-            requestBody = JSON.stringify({ // ✅ FIX: ลบ userId ออก
+            requestBody = JSON.stringify({
                 targetId: parseInt(currentTargetId),
                 targetType: TARGET_TYPE
             });
@@ -268,12 +264,12 @@
 
             // (กรณี 403 หรือ error อื่นๆ)
             if (!response.ok) { 
-                 const result = await response.json().catch(() => ({})); // อ่าน error message
+                 const result = await response.json().catch(() => ({})); 
                  
                  if (response.status === 403) {
                      setBookmarkIcon(isCurrentlyBookmarked); // ย้อนกลับ
                      alert(result.error || 'กรุณาเข้าสู่ระบบก่อนดำเนินการ');
-                     window.location.href = '/login.html'; // ไปหน้า login
+                     // ⛔️ [แก้ไข] ลบบรรทัด redirect ออก
                  } else {
                      setBookmarkIcon(isCurrentlyBookmarked); // ย้อนกลับ
                      alert(`เกิดข้อผิดพลาด: ${result.error || 'Unknown error'}`);
@@ -285,7 +281,8 @@
             const result = await response.json();
             const isSuccess = (method === 'POST');
             setBookmarkIcon(isSuccess); 
-            // alert(result.message || (isSuccess ? 'บันทึกสำเร็จ' : 'ยกเลิกสำเร็จ')); // (Optional: ปิด alert เพื่อไม่ให้เกะกะ)
+            
+            alert(result.message || (isSuccess ? 'บันทึกสำเร็จ' : 'ยกเลิกสำเร็จ'));
 
         } catch (error) {
             console.error('Error handling bookmark:', error);
@@ -296,6 +293,8 @@
 
     document.addEventListener('DOMContentLoaded', fetchAndDisplayDetails);
 </script>
+
+
     
 </body>
 </html>
