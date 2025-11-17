@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แจ้งเรื่อง - TU COMPASS</title>
+    <link rel="stylesheet" href="form-style.css">
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+
+    <script type="module">
+        import { protectPage } from "../authGuard.js";
+        protectPage(false); // false = ต้องเป็น USER (ไม่ใช่ Admin)
+    </script>
+
+</head>
+<body>
+    <div class="form-container">
+    <header>แจ้งเรื่อง/ข้อเสนอแนะ</header>
+    <main>
+        <form id="report-form">
+            <div class="form-group">
+                <label for="title">หัวข้อเรื่อง</label>
+                <input type="text" id="title" placeholder="กรอกหัวข้อเรื่อง..." required>
+            </div>
+
+            <div class="form-group">
+                <label for="message">รายละเอียด</label>
+                <textarea id="message" rows="5" placeholder="กรอกรายละเอียดปัญหา/ข้อเสนอแนะ..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="placeName">สถานที่ที่เกี่ยวข้อง (ไม่บังคับ)</label>
+                <input type="text" id="placeName" placeholder="เช่น อาคาร SC3, โรงอาหาร...">
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn btn-save">ส่งเรื่อง</button>
+            </div>
+        </form>
+    </main>
+    </div>
+
+    <script>
+        document.getElementById("report-form").addEventListener("submit", async function(e) {
+            e.preventDefault();
+    
+            const data = {
+                title: document.getElementById("title").value,
+                message: document.getElementById("message").value,
+                placeName: document.getElementById("placeName").value,
+            };
+    
+            try {
+                // ใช้ path แบบ relative และส่งข้อมูล
+                const response = await fetch("/api/reports/submit", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data),
+                    
+                    // ✅ 4. เพิ่ม 'credentials: "include"'
+                    // บรรทัดนี้สำคัญมาก! เพื่อส่งคุกกี้ Session (JSESSIONID)
+                    // ให้ backend รู้ว่า User คนไหนเป็นคนส่ง
+                    credentials: "include"
+                });
+        
+                if (response.ok) {
+                    alert("ส่งเรื่องสำเร็จ! ขอบคุณสำหรับข้อมูล");
+                    document.getElementById("report-form").reset(); 
+                    // หากต้องการให้กลับไปหน้าแผนที่หลังส่งสำเร็จ
+                    // window.location.href = 'map.html';
+                } else {
+                    const error = await response.json().catch(() => ({}));
+                    console.error("Submit failed:", error);
+                    alert("ส่งเรื่องไม่สำเร็จ: " + (error.error || "กรุณาตรวจสอบว่าคุณได้เข้าสู่ระบบแล้ว"));
+                }
+            } catch (err) {
+                console.error("Fetch Error:", err);
+                alert("เกิดข้อผิดพลาดในการเชื่อมต่อ ไม่สามารถส่งเรื่องได้");
+            }
+        }); 
+    </script>
+
+</body>
+</html>

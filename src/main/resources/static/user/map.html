@@ -5,20 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TU Compass Map</title>
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap" rel="stylesheet">
-
-    <!-- ใช้ Font Awesome v5 (รองรับ fas fa-home) -->
-    <link rel="stylesheet" 
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/images/favicon.png">
-
-    <!-- CSS -->
-    <link rel="stylesheet" href="map-style.css">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap" rel="stylesheet">
+	   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+	<link rel="icon" type="image/png" href="/images/favicon.png">
+	   <link rel="stylesheet" href="../map-style.css">
 </head>
 
 <body>
@@ -47,11 +39,16 @@
         <button id="my-location-btn">
             <i class="fas fa-location-crosshairs"></i>
         </button>
+		<!-- Report Button -->
+		<button id="report-btn" class="report-btn">
+		    <i class="fas fa-flag"></i>
+		</button>
     </div>
-
+	
     <!-- Dynamic Navbar -->
     <footer class="bottom-nav" id="bottom-nav"></footer>
-
+	
+	
     <div id="directions-panel"></div>
 </div>
 
@@ -76,7 +73,8 @@
 </div>
 
 <!-- Map Script -->
-<script src="map-script.js"></script>
+<!-- ✅ FIX: Changed path to point to the root map-script.js -->
+<script src="../map-script.js"></script>
 
 <!-- Google Maps API -->
 <script async
@@ -135,6 +133,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 </script>
-
+<script>
+document.getElementById("report-btn").onclick = () => {
+    window.location.href = "/form.html"; 
+};
+</script>
 </body>
 </html>

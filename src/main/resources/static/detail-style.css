@@ -187,21 +187,6 @@ body, html {
     text-align: justify;
 }
 
-/* ปุ่ม CTA */
-.cta-button {
-    background-color: #923C37;
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 4px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    width: auto;
-    margin-top: 30px;
-    transition: background-color 0.3s;
-}
-
 /* --- เพิ่ม/แก้ไขในส่วนของ Media Column --- */
 .main-image {
     position: relative;
@@ -351,8 +336,4 @@ body, html {
         padding: 0 10px;
     }
     
-    .cta-button {
-        width: 90%;
-        max-width: 300px;
-    }
 }

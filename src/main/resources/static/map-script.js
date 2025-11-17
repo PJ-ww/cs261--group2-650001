@@ -173,12 +173,17 @@ async function initMap() {
 				  `;
                 // <p>สถานะความหนาแน่น: <b>${location.densityStatus || 'N/A'}</b></p>
 
-
                 infoWindow.setContent(content);
 
+                // IMPORTANT: ใช้ 'domready' และ query จาก DOM จริง (wrapper .gm-style-iw)
                 google.maps.event.addListener(infoWindow, 'domready', () => {
+                    // หา container ของ InfoWindow ใน DOM (Google Maps ใส่ content ลงใน .gm-style-iw)
+                    // ถ้าไม่พบให้ fallback หา .place-popup ตรง ๆ
+                    const iwContainer = document.querySelector('.gm-style-iw');
+                    const popupEl = iwContainer ? iwContainer.querySelector('.place-popup') : document.querySelector('.place-popup');
+
                     // ปุ่มนำทางจาก Popup
-                    const directionsBtn = document.querySelector('.directions-btn');
+                    const directionsBtn = popupEl ? popupEl.querySelector('.directions-btn') : document.querySelector('.directions-btn');
                     if (directionsBtn) {
                         directionsBtn.onclick = () => {
                             const lat = parseFloat(directionsBtn.getAttribute('data-lat'));
@@ -193,15 +198,25 @@ async function initMap() {
                         };
                     }
 
-                    // ⭐️ ปุ่มบุ๊กมาร์กใน popup
-                    const bookmarkBtn = infoWindow.getContent().querySelector('.bookmark-btn');
+                    // ⭐️ ปุ่มบุ๊กมาร์กใน popup (หา element จริง)
+                    const bookmarkBtn = popupEl ? popupEl.querySelector('.bookmark-btn') : document.querySelector('.bookmark-btn');
                     if (bookmarkBtn) {
-                        bookmarkBtn.addEventListener('click', (e) => {
+                        // ลบ handler เก่าถ้ามี (เราเก็บ reference ใน _boundClick)
+                        try {
+                            if (bookmarkBtn._boundClick) {
+                                bookmarkBtn.removeEventListener('click', bookmarkBtn._boundClick);
+                            }
+                        } catch(e) { /* ignore */ }
+
+                        const boundHandler = (e) => {
                             const btn = e.currentTarget;
                             const locationId = parseInt(btn.getAttribute('data-location-id'));
                             const locationName = btn.getAttribute('data-location-name');
                             handleBookmarkClick(btn, locationId, locationName);
-                        });
+                        };
+                        // เก็บ reference เพื่อให้สามารถลบ event ได้ในอนาคต
+                        bookmarkBtn._boundClick = boundHandler;
+                        bookmarkBtn.addEventListener('click', boundHandler);
                     }
                 });
 
@@ -213,6 +228,30 @@ async function initMap() {
         console.error('Error fetching locations:', error);
         populateFilterModal([]); // แสดง "ไม่พบหมวดหมู่"
     }
+
+    // ---------------------------------
+    // ✅ [โค้ดส่วนที่เพิ่ม]
+    // ---------------------------------
+    // ตรวจสอบ query parameter 'search' ตอนโหลดหน้า
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchTermFromUrl = urlParams.get('search');
+
+    if (searchTermFromUrl) {
+        const decodedTerm = decodeURIComponent(searchTermFromUrl);
+        console.log("พบคำค้นหาจาก URL:", decodedTerm);
+        
+        // ใส่คำค้นหาลงในช่อง search
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) {
+            searchInput.value = decodedTerm;
+        }
+        
+        // เรียกฟังก์ชันค้นหาและปักหมุด
+        fetchAndDisplayDetails(decodedTerm);
+    }
+    // ---------------------------------
+    // ✅ [จบส่วนที่เพิ่ม]
+    // ---------------------------------
 }
 
 /**
@@ -241,7 +280,7 @@ async function handleBookmarkClick(buttonElement, locationId, locationName) {
 
         if (response.status === 403) {
             alert("กรุณาเข้าสู่ระบบก่อนบันทึกรายการโปรด");
-            window.location.href = '/login.html';
+            // ⛔️ [แก้ไข] ลบบรรทัด redirect ออก
             return;
         }
 
@@ -261,7 +300,8 @@ async function handleBookmarkClick(buttonElement, locationId, locationName) {
             buttonElement.innerHTML = `<i class="fa-solid fa-bookmark"></i> บันทึกแล้ว`;
         }
         
-        // alert(isCurrentlyBookmarked ? 'ลบออกจากรายการโปรดแล้ว' : 'บันทึกในรายการโปรดแล้ว');
+        // ✅ เปิดการแจ้งเตือน
+        alert(isCurrentlyBookmarked ? 'ลบออกจากรายการโปรดแล้ว' : 'บันทึกในรายการโปรดแล้ว');
 
     } catch (error) {
         console.error("Bookmark action failed:", error);
@@ -578,8 +618,12 @@ async function fetchAndDisplayDetails(searchTerm) {
 
         infoWindow.setContent(content);
 
+        // Note: ใช้ domready และ query จาก DOM จริง (เหมือนใน initMap)
         google.maps.event.addListener(infoWindow, 'domready', () => {
-            const directionsBtn = document.querySelector('.directions-btn');
+            const iwContainer = document.querySelector('.gm-style-iw');
+            const popupEl = iwContainer ? iwContainer.querySelector('.place-popup') : document.querySelector('.place-popup');
+
+            const directionsBtn = popupEl ? popupEl.querySelector('.directions-btn') : document.querySelector('.directions-btn');
             if (directionsBtn) {
                 directionsBtn.onclick = () => {
                     const lat = parseFloat(directionsBtn.getAttribute('data-lat'));
@@ -593,15 +637,23 @@ async function fetchAndDisplayDetails(searchTerm) {
                 };
             }
 
-            // ⭐️ ปุ่มบุ๊กมาร์กใน popup
-            const bookmarkBtn = infoWindow.getContent().querySelector('.bookmark-btn');
+            // ปุ่มบุ๊กมาร์ก ในกรณีค้นหา (ใช้ popupEl)
+            const bookmarkBtn = popupEl ? popupEl.querySelector('.bookmark-btn') : document.querySelector('.bookmark-btn');
             if (bookmarkBtn) {
-                bookmarkBtn.addEventListener('click', (e) => {
+                try {
+                    if (bookmarkBtn._boundClick) {
+                        bookmarkBtn.removeEventListener('click', bookmarkBtn._boundClick);
+                    }
+                } catch(e) { /* ignore */ }
+
+                const boundHandler = (e) => {
                     const btn = e.currentTarget;
                     const locationId = parseInt(btn.getAttribute('data-location-id'));
                     const locationName = btn.getAttribute('data-location-name');
                     handleBookmarkClick(btn, locationId, locationName);
-                });
+                };
+                bookmarkBtn._boundClick = boundHandler;
+                bookmarkBtn.addEventListener('click', boundHandler);
             }
         });
 

@@ -519,3 +519,29 @@ body, html {
     from { opacity: 0; transform: scale(0.9); }
     to   { opacity: 1; transform: scale(1); }
 }
+
+.report-btn {
+    width: 40px;
+    height: 40px;
+    background: #ffffff; /* ⭐ ทำให้พื้นหลังปกติ */
+    color: #ff4d4d;       /* ⭐ ไอคอนเป็นสีแดงปกติแบบเห็นชัด */
+    border: 1.5px solid #e5e5e5;
+    border-radius: 8px;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.report-btn:hover {
+    background: #ff4d4d;  /* ⭐ เปลี่ยนพื้นหลังเป็นแดงตอน hover */
+    color: rgb(255, 0, 0);       /* ⭐ ไอคอนเป็นสีขาวตอน hover (ตัดกับแดง) */
+}
+.side-controls button:hover {
+    background-color: #f0f0f0;   /* สีเทาอ่อนตอน hover */
+    transform: scale(1.05);      /* ขยายเล็กน้อย */
+    transition: 0.2s ease;
+}
