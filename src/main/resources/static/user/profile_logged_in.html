@@ -5,15 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profile - Logged In</title>
 
-  <!-- CSS ของ user profile (อยู่ที่ static/login_style.css) -->
   <link rel="stylesheet" href="/login_style.css">
+  
+  <link rel="stylesheet" href="admin-style.css"> 
 
-  <!-- Font Awesome 5 (รองรับ fas) -->
   <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
-  <!-- favicon จาก /static/images -->
- <link rel="icon" type="image/png" href="/images/favicon.png">
+  <link rel="icon" type="image/png" href="/images/favicon.png">
 </head>
 
 <body>
@@ -34,6 +33,9 @@
       <p id="email" class="email-text"></p>
     </div>
 
+    <a href="/form.html" class="profile-button-red" style="margin-top: 20px;">
+        <i class="fas fa-flag"></i> แจ้งปัญหา/รายงาน
+    </a>
     <div class="logout-section">
       <div class="divider-line"></div>
       <a href="#" class="logout-link" onclick="logout()">
@@ -43,16 +45,13 @@
     </div>
   </main>
 
-  <!-- ⭐ Dynamic navbar -->
   <footer class="bottom-nav" id="bottom-nav"></footer>
 
-  <!-- ⭐ User-only page (ไม่ใช่ admin) -->
   <script type="module">
     import { protectPage } from "../authGuard.js";
     protectPage(false);
   </script>
 
-  <!-- โหลดข้อมูลโปรไฟล์ขึ้นบนหน้า -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const userData = localStorage.getItem("student_info");
@@ -95,7 +94,6 @@
     }
   </script>
 
-  <!-- ⭐ Navbar Script -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const navbar = `
