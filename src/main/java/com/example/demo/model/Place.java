@@ -100,4 +100,24 @@ public class Place {
 
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }
+    
+    @Transient
+    private Integer densityScore;
+
+    @Transient
+    private String densityLevel;
+
+    @Transient
+    private java.time.LocalDateTime densityComputedAt;
+
+    public Integer getDensityScore() { return densityScore; }
+    public void setDensityScore(Integer densityScore) { this.densityScore = densityScore; }
+
+    public String getDensityLevel() { return densityLevel; }
+    public void setDensityLevel(String densityLevel) { this.densityLevel = densityLevel; }
+
+    public java.time.LocalDateTime getDensityComputedAt() { return densityComputedAt; }
+    public void setDensityComputedAt(java.time.LocalDateTime densityComputedAt) {
+        this.densityComputedAt = densityComputedAt;
+}
 }

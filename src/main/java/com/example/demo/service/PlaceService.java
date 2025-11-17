@@ -12,9 +12,12 @@ import java.util.List;
 public class PlaceService {
 
     private final PlaceRepository placeRepository;
+    private final DensityService densityService;
 
-    public PlaceService(PlaceRepository placeRepository) {
-        this.placeRepository = placeRepository;
+    public PlaceService(PlaceRepository placeRepository,
+            DensityService densityService) {
+    	this.placeRepository = placeRepository;
+    	this.densityService = densityService;
     }
 
     public List<Place> getAllPlaces() {
@@ -52,27 +55,32 @@ public class PlaceService {
     }
     //update
     public List<Place> getPlaces(String search, Long categoryId) {
+
         boolean hasSearch = (search != null && !search.isBlank());
         boolean hasCategory = (categoryId != null);
 
-        // 1) ทั้ง search + category
+        List<Place> places;
+
         if (hasSearch && hasCategory) {
-            return placeRepository
-                    .findByNameContainingIgnoreCaseAndCategory_Id(search, categoryId);
+            places = placeRepository.findByNameContainingIgnoreCaseAndCategory_Id(search, categoryId);
+        } else if (hasSearch) {
+            places = placeRepository.findByNameContainingIgnoreCase(search);
+        } else if (hasCategory) {
+            places = placeRepository.findByCategory_Id(categoryId);
+        } else {
+            places = placeRepository.findAll();
         }
 
-        // 2) เฉพาะ search
-        if (hasSearch) {
-            return placeRepository.findByNameContainingIgnoreCase(search);
-        }
-
-        // 3) เฉพาะ category
-        if (hasCategory) {
-            return placeRepository.findByCategory_Id(categoryId);
-        }
-
-        // 4) ไม่ส่งอะไรมาเลย
-        return placeRepository.findAll();
+        // 🔥 เติม density ให้ทุก place
+        places.forEach(densityService::applyDensity);
+        return places;
+    }
+    
+    public Place getPlaceById(Long id) {
+        Place place = placeRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ไม่พบสถานที่"));
+        densityService.applyDensity(place);
+        return place;
     }
     //update
 }

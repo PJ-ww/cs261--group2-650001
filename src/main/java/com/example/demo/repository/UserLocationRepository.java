@@ -3,6 +3,12 @@ package com.example.demo.repository;
 import com.example.demo.model.UserLocation;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-// Interface สามารถ save(), findById(), findAll() ข้อมูลตำแหน่งได้ kim
+import java.time.LocalDateTime;
+import java.util.List;
+
 public interface UserLocationRepository extends JpaRepository<UserLocation, Long> {
+
+    List<UserLocation> findByTimestampAfter(LocalDateTime cutoff);
+
+    void deleteByTimestampBefore(LocalDateTime cutoff);
 }

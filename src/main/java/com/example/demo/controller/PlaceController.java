@@ -26,10 +26,15 @@ public class PlaceController {
     //update
     @GetMapping
     public List<Place> getPlaces(
-            @RequestParam(value = "search", required = false) String search,
-            @RequestParam(value = "category", required = false) Long categoryId
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long categoryId
     ) {
         return placeService.getPlaces(search, categoryId);
+    }
+
+    @GetMapping("/{id}")
+    public Place getPlace(@PathVariable Long id) {
+        return placeService.getPlaceById(id);
     }
     //update
 
@@ -48,6 +53,5 @@ public class PlaceController {
         placeService.deletePlace(id);
         return "ลบสถานที่เรียบร้อยแล้ว";
     }
-    
-  
+   
 }

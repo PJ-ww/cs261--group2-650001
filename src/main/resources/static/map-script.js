@@ -139,30 +139,38 @@ async function initMap() {
                     </button>
                 `;
 
-                const content = `
-                <div class="place-popup">
-                    <h4>${location.name}</h4>
-                    <p>
-                        เวลาทำการ:
-                        ${(location.openTime?.trim() && location.closeTime?.trim())
-                        ? `${location.openTime} - ${location.closeTime}`
-                        : 'N/A'}
-                    </p>
-                    
-                    <div class="popup-actions">
-                        ${bookmarkButtonHtml}
-                        
-                        <a href="detail.html?shortName=${encodeURIComponent(location.name)}" class="details-btn">
-                            ดูรายละเอียด
-                        </a>
-                    </div>
-                    <button class="directions-btn"
-                            data-lat="${location.latitude}"
-                            data-lng="${location.longitude}">
-                        <i class="fa-solid fa-person-walking"></i> นำทาง (เดิน)
-                    </button>
-                </div>
-                `;
+				const content = `
+				  <div class="place-popup">
+				      <h4>${location.name}</h4>
+				      <p>
+				          เวลาทำการ:
+				          ${(location.openTime?.trim() && location.closeTime?.trim())
+				          ? `${location.openTime} - ${location.closeTime}`
+				          : 'N/A'}
+				      </p>
+
+				      <div>
+				          <span class="density-badge"
+				                style="background:${getDensityColor(location.densityLevel)}">
+				              ${getDensityLabelTh(location.densityLevel)}
+				              • ${location.densityScore ?? 0} คนใกล้เคียง
+				          </span>
+				      </div>
+				      
+				      <div class="popup-actions">
+				          ${bookmarkButtonHtml}
+				          
+				          <a href="detail.html?shortName=${encodeURIComponent(location.name)}" class="details-btn">
+				              ดูรายละเอียด
+				          </a>
+				      </div>
+				      <button class="directions-btn"
+				              data-lat="${location.latitude}"
+				              data-lng="${location.longitude}">
+				          <i class="fa-solid fa-person-walking"></i> นำทาง (เดิน)
+				      </button>
+				  </div>
+				  `;
                 // <p>สถานะความหนาแน่น: <b>${location.densityStatus || 'N/A'}</b></p>
 
 
@@ -527,24 +535,33 @@ async function fetchAndDisplayDetails(searchTerm) {
             </button>
         `;
 
-        const content = `
-        <div class="place-popup">
-            <h4>${locationDetails.name}</h4>
-            <p>เวลาทำการ: ${workingHours}</p>
-            <div class="popup-actions">
-                ${bookmarkButtonHtml}
-                
-                <a href="detail.html?shortName=${encodeURIComponent(shortName)}" class="details-btn">
-                    ดูรายละเอียด
-                </a>
-            </div>
-            <button class="directions-btn"
-                data-lat="${locationDetails.latitude}"
-                data-lng="${locationDetails.longitude}">
-                <i class="fa-solid fa-person-walking"></i> นำทาง (เดิน)
-            </button>
-        </div>
-        `;
+		const content = `
+		<div class="place-popup">
+		    <h4>${locationDetails.name}</h4>
+		    <p>เวลาทำการ: ${workingHours}</p>
+
+		    <div>
+		        <span class="density-badge"
+		              style="background:${getDensityColor(locationDetails.densityLevel)}">
+		            ${getDensityLabelTh(locationDetails.densityLevel)}
+		            • ${locationDetails.densityScore ?? 0} คนใกล้เคียง
+		        </span>
+		    </div>
+
+		    <div class="popup-actions">
+		        ${bookmarkButtonHtml}
+		        
+		        <a href="detail.html?shortName=${encodeURIComponent(shortName)}" class="details-btn">
+		            ดูรายละเอียด
+		        </a>
+		    </div>
+		    <button class="directions-btn"
+		        data-lat="${locationDetails.latitude}"
+		        data-lng="${locationDetails.longitude}">
+		        <i class="fa-solid fa-person-walking"></i> นำทาง (เดิน)
+		    </button>
+		</div>
+		`;
 
         // ลบหมุดค้นหาเก่าถ้ามี
         if (searchTempMarker) {
@@ -724,3 +741,303 @@ function applyCategoryFilters(selectedCategories) {
         }
     });
 }
+
+// ===========================
+// Config เบื้องต้น
+// ===========================
+
+const LOCATION_API_BASE = "/api";
+const LOCATION_UPDATE_ENDPOINT = `${LOCATION_API_BASE}/user/location`;
+
+// ปรับค่าพวกนี้ได้ตาม DoD
+const MIN_INTERVAL_MS = 15_000;        // ส่งไม่ถี่เกิน 1 ครั้งต่อ 15 วิ
+const MIN_DISTANCE_METERS = 30;        // ต้องขยับเกิน 30 เมตรค่อยส่งใหม่
+const MAX_RETRY_ATTEMPTS = 3;          // ส่งไม่สำเร็จ retry สูงสุด 3 ครั้ง
+
+// ===========================
+// Utils
+// ===========================
+
+// Haversine distance (เมตร)
+function distanceInMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371e3;
+  const φ1 = lat1 * Math.PI / 180;
+  const φ2 = lat2 * Math.PI / 180;
+  const Δφ = (lat2 - lat1) * Math.PI / 180;
+  const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+  const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ/2) * Math.sin(Δλ/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+  return R * c;
+}
+
+// ดึง userId จาก localStorage (ปรับให้ตรงกับโปรเจกต์จริง)
+function getCurrentUserId() {
+  // TODO: ถ้าโปรเจกต์เธอเก็บ key อื่น เช่น "user.id" ให้เปลี่ยนตรงนี้
+  const raw = localStorage.getItem("userId");
+  if (!raw) return null;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+}
+
+// สำหรับ log analytics / debug
+function logAnalytics(eventName, payload = {}) {
+  console.log("[LocationAnalytics]", eventName, payload);
+  // ถ้าทีมมี endpoint สำหรับ analytics ก็เรียก fetch จากตรงนี้ได้
+}
+
+// ===========================
+// Consent Manager (U8.6)
+// ===========================
+
+const LocationConsentManager = (function () {
+  const STORAGE_KEY = "locationConsent";  // "granted" | "denied"
+
+  function getStoredConsent() {
+    return localStorage.getItem(STORAGE_KEY);
+  }
+
+  function setStoredConsent(value) {
+    localStorage.setItem(STORAGE_KEY, value);
+  }
+
+  async function getBrowserPermissionState() {
+    if (!navigator.permissions || !navigator.permissions.query) {
+      return null; // browser ไม่รองรับ Permissions API
+    }
+    try {
+      const result = await navigator.permissions.query({ name: "geolocation" });
+      return result.state; // "granted" | "denied" | "prompt"
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function showBanner() {
+    const banner = document.getElementById("location-consent-banner");
+    if (banner) {
+      banner.classList.remove("hidden");
+      logAnalytics("consent_shown");
+    }
+  }
+
+  function hideBanner() {
+    const banner = document.getElementById("location-consent-banner");
+    if (banner) {
+      banner.classList.add("hidden");
+    }
+  }
+
+  function initBannerHandlers(onGranted, onDenied) {
+    const allowBtn = document.getElementById("btn-consent-allow");
+    const denyBtn = document.getElementById("btn-consent-deny");
+
+    if (allowBtn) {
+      allowBtn.addEventListener("click", async () => {
+        hideBanner();
+        setStoredConsent("granted");
+        logAnalytics("consent_granted", { source: "banner" });
+        onGranted && onGranted();
+      });
+    }
+
+    if (denyBtn) {
+      denyBtn.addEventListener("click", () => {
+        hideBanner();
+        setStoredConsent("denied");
+        logAnalytics("consent_denied", { source: "banner" });
+        onDenied && onDenied();
+      });
+    }
+  }
+
+  async function init(onGranted, onDenied) {
+    initBannerHandlers(onGranted, onDenied);
+
+    const stored = getStoredConsent();
+    const browserState = await getBrowserPermissionState();
+
+    // ถ้าผู้ใช้เคยอนุญาตไปแล้ว + browser ก็บอก granted
+    if (stored === "granted" || browserState === "granted") {
+      logAnalytics("consent_already_granted", { stored, browserState });
+      onGranted && onGranted();
+      return;
+    }
+
+    // ถ้าเคยปฏิเสธไว้
+    if (stored === "denied" || browserState === "denied") {
+      logAnalytics("consent_already_denied", { stored, browserState });
+      onDenied && onDenied();
+      return;
+    }
+
+    // ยังไม่เคย ตรงตามเคส "prompt"
+    showBanner();
+  }
+
+  return {
+    init,
+    showBanner,
+    hideBanner,
+  };
+})();
+
+// ===========================
+// Location Tracker (U8.7)
+// ===========================
+
+const LocationTracker = (function () {
+  let watchId = null;
+  let lastSentTime = 0;
+  let lastSentLat = null;
+  let lastSentLng = null;
+
+  function canSendNow(lat, lng) {
+    const now = Date.now();
+
+    // ยังไม่เคยส่งเลย
+    if (lastSentLat === null || lastSentLng === null) return true;
+
+    const timeDiff = now - lastSentTime;
+    if (timeDiff < MIN_INTERVAL_MS) return false;
+
+    const dist = distanceInMeters(lastSentLat, lastSentLng, lat, lng);
+    if (dist < MIN_DISTANCE_METERS) return false;
+
+    return true;
+  }
+
+  async function sendLocation(lat, lng, attempt = 1) {
+    const userId = getCurrentUserId();
+    if (!userId) {
+      console.warn("[LocationTracker] ไม่มี userId ใน localStorage, ไม่ส่งตำแหน่ง");
+      return;
+    }
+
+    try {
+      const res = await fetch(LOCATION_UPDATE_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId,
+          latitude: lat,
+          longitude: lng,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+
+      lastSentTime = Date.now();
+      lastSentLat = lat;
+      lastSentLng = lng;
+
+      logAnalytics("location_sent_success", { lat, lng });
+    } catch (err) {
+      console.error("[LocationTracker] ส่งตำแหน่งไม่สำเร็จ", err);
+
+      if (attempt < MAX_RETRY_ATTEMPTS) {
+        const delay = Math.pow(2, attempt) * 1000; // exponential backoff
+        logAnalytics("location_send_retry", { attempt, delay });
+        setTimeout(() => sendLocation(lat, lng, attempt + 1), delay);
+      } else {
+        logAnalytics("location_send_failed", { lat, lng, attempt });
+      }
+    }
+  }
+
+  function startTracking() {
+    if (!("geolocation" in navigator)) {
+      console.warn("[LocationTracker] Browser ไม่รองรับ geolocation");
+      return;
+    }
+
+    if (watchId !== null) {
+      // tracking อยู่แล้ว
+      return;
+    }
+
+    watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+
+        logAnalytics("location_observed", { lat, lng });
+
+        if (canSendNow(lat, lng)) {
+          sendLocation(lat, lng);
+        }
+      },
+      (err) => {
+        console.error("[LocationTracker] error จาก geolocation", err);
+        logAnalytics("geolocation_error", { code: err.code, message: err.message });
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 5000,
+        timeout: 10000,
+      }
+    );
+
+    logAnalytics("tracking_started");
+  }
+
+  function stopTracking() {
+    if (watchId !== null && navigator.geolocation) {
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+      logAnalytics("tracking_stopped");
+    }
+  }
+
+  return {
+    startTracking,
+    stopTracking,
+  };
+})();
+
+// ===========================
+// Entry point: เรียกจากหน้า map เมื่อโหลดเสร็จ
+// ===========================
+
+document.addEventListener("DOMContentLoaded", async () => {
+  // ถ้าไม่ได้อยู่หน้า map ให้ skip ได้ (เช่น เช็ค element บางตัว)
+  const mapElement = document.getElementById("map");
+  if (!mapElement) return;
+
+  await LocationConsentManager.init(
+    () => {
+      // onGranted
+      LocationTracker.startTracking();
+    },
+    () => {
+      // onDenied
+      LocationTracker.stopTracking();
+    }
+  );
+});
+
+function getDensityColor(level) {
+    switch ((level || "").toUpperCase()) {
+        case "HIGH":   return "#c62828"; // แดง
+        case "MEDIUM": return "#f9a825"; // เหลือง
+        case "LOW":    return "#2e7d32"; // เขียว
+        default:       return "#9e9e9e"; // เทา = unknown
+    }
+}
+
+function getDensityLabelTh(level) {
+    switch ((level || "").toUpperCase()) {
+        case "HIGH":   return "หนาแน่นมาก";
+        case "MEDIUM": return "หนาแน่นปานกลาง";
+        case "LOW":    return "คนน้อย";
+        default:       return "ไม่ทราบ";
+    }
+}
+

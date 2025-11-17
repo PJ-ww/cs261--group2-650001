@@ -73,6 +73,31 @@
 
 			            </div>
 			</div>
+			
+			<!-- U8: Location Consent Banner -->
+			<div id="location-consent-banner" class="location-consent-banner hidden">
+			  <div class="location-consent-content">
+			    <h3>อนุญาตให้ใช้ตำแหน่งของคุณไหม?</h3>
+			    <p>
+			      เราขอใช้ตำแหน่งปัจจุบันของคุณเพื่อคำนวณความหนาแน่นของผู้ใช้งานใกล้แต่ละสถานที่
+			      เพื่อช่วยให้คุณวางแผนการใช้ facility ได้ดีขึ้น
+			      คุณสามารถยกเลิกการอนุญาตได้ตลอดเวลาจากการตั้งค่าเบราว์เซอร์
+			    </p>
+			    <ul>
+			      <li><b>ใช้ทำอะไร:</b> แสดงจำนวนคนที่อยู่ใกล้ facility แต่ละแห่งแบบ realtime</li>
+			      <li><b>ระยะเวลา:</b> จะเก็บเฉพาะตำแหน่งในช่วงเวลาล่าสุด (เช่น 5 นาที)</li>
+			      <li><b>ยกเลิกได้:</b> ปิดการเข้าถึง location จากการตั้งค่าเบราว์เซอร์เมื่อไรก็ได้</li>
+			    </ul>
+			    <div class="location-consent-actions">
+			      <button id="btn-consent-allow">อนุญาต</button>
+			      <button id="btn-consent-deny">ไม่อนุญาต</button>
+			    </div>
+			    <small class="location-consent-note">
+			      เราจะไม่ใช้ตำแหน่งของคุณเพื่อวัตถุประสงค์อื่นนอกจากการคำนวณความหนาแน่นของผู้ใช้งาน
+			    </small>
+			  </div>
+			</div>
+			
     <script src="map-script.js"></script>
     <script async
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDXg9TGFh7rvgORmv5d-8rUJS8N1jrjPRE&callback=initMap&libraries=places,directions">

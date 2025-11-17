@@ -60,7 +60,8 @@ async function login() {
       localStorage.setItem("tu_token", data.message);
       localStorage.setItem("student_info", JSON.stringify(userProfile)); // This is now safe
       localStorage.setItem("role", data.role);
-
+	  localStorage.setItem("userId", String(parseInt(userId, 10)));
+	  
       // 🔹 5. Redirect based on role
       if (data.role === "ROLE_ADMIN") {
         window.location.href = "/admin/dashboard.html";
