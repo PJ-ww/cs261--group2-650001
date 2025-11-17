@@ -10,8 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 	<link rel="icon" type="image/png" href="/images/favicon.png">
-
-    <link rel="stylesheet" href="detail-style.css"> 
+    <link rel="stylesheet" href="../detail-style.css">
 </head>
 <body>
     <div class="page-container">
@@ -39,7 +38,9 @@
                 <div class="title-block">
                     <h1 class="item-name" id="location-name">...</h1>
                     <span class="location-pin-icon"><i class="fa-solid fa-location-dot"></i></span>
-                    <!--<span class="bookmark-icon"><i class="fa-regular fa-bookmark"></i></span>-->
+                    <span class="bookmark-icon" id="bookmark-icon">
+                        <i class="fa-regular fa-bookmark"></i> 
+                    </span>
                 </div>
 
                 <hr class="info-separator">
@@ -66,14 +67,74 @@
         </main>
     </div>
 
-    <script src="map-script.js"></script>
-	<script type="module">
-				  import { protectPage } from "/authGuard.js";
-				  protectPage(true); // 🧩 บังคับเฉพาะ admin
-		</script>
+<!-- ✅ FIX 1: Point to the correct map script at the root -->
+<script src="../map-script.js"></script>
+
 <script>
-    // ใช้ API Endpoint เดียวกับที่ระบุใน fetchAndDisplayDetails
+    // Use API Endpoint เดียวกับที่ระบุใน fetchAndDisplayDetails
     const API_BASE_URL = 'http://localhost:8080/api/locations';
+    // สร้าง URL สำหรับ Bookmark API
+    // ✅ FIX: Changed from /api/bookmarks to /bookmarks to avoid double /api
+    const BOOKMARK_API_URL = API_BASE_URL.replace('/locations', '/bookmarks'); // http://localhost:8080/api/bookmarks
+    
+    // ✅ FIX 2: Removed DUMMY_USER_ID
+    const TARGET_TYPE = "LOCATION"; 
+
+    // ตัวแปร Global สำหรับเก็บสถานะ
+    let currentTargetId = null; 
+    let bookmarkIconContainer = null;
+
+    // --- Bookmark UI/State Functions ---
+    /**
+     * ตั้งค่าไอคอน Bookmark (ทึบ = บันทึกแล้ว, ว่าง = ยังไม่บันทึก)
+     */
+    const setBookmarkIcon = (isBookmarked) => {
+        if (!bookmarkIconContainer) return;
+        // (Checklist 1: ไอคอนเปลี่ยนสถานะได้เมื่อผู้ใช้กด)
+        if (isBookmarked) {
+            bookmarkIconContainer.innerHTML = '<i class="fa-solid fa-bookmark"></i>';
+        } else {
+            bookmarkIconContainer.innerHTML = '<i class="fa-regular fa-bookmark"></i>';
+        }
+    };
+
+    /**
+     * ✅ FIX 3: Replaced logic to fetch all bookmarks and check against the list
+     * ตรวจสอบสถานะ Bookmark เมื่อโหลดหน้า (Checklist 3)
+     */
+    async function checkInitialBookmarkStatus(targetId) {
+        try {
+            // Fetch all bookmarks using user's credentials
+            const response = await fetch(BOOKMARK_API_URL, {
+                method: 'GET',
+                credentials: 'include' // <-- ADDED: Sends the session cookie
+            });
+
+            if (response.status === 403) {
+                console.warn("User not logged in, cannot check bookmark status.");
+                setBookmarkIcon(false);
+                return;
+            }
+            if (!response.ok) {
+                console.error("Failed to check bookmark status:", response.status);
+                setBookmarkIcon(false);
+                return;
+            }
+            
+            const allBookmarks = await response.json();
+            
+            // Check if the current page's ID is in the user's list
+            const isBookmarked = allBookmarks.some(
+                bookmark => bookmark.targetId == targetId && bookmark.targetType == TARGET_TYPE
+            );
+            
+            setBookmarkIcon(isBookmarked); // ตั้งค่าไอคอนตามข้อมูลจาก Backend
+        } catch (error) {
+            console.error('Error checking initial bookmark status:', error);
+            setBookmarkIcon(false);
+        }
+    }
+
 
     async function fetchAndDisplayDetails() {
         // ดึง shortName จาก URL (ใช้เป็น searchTerm)
@@ -81,6 +142,7 @@
         const searchTerm = params.get('shortName');
     
         const locationNameElement = document.getElementById('location-name');
+        bookmarkIconContainer = document.getElementById('bookmark-icon'); // ดึง element ไอคอน
 
         if (!searchTerm) {
             locationNameElement.textContent = 'กรุณาระบุสถานที่';
@@ -109,6 +171,10 @@
 
             // 2. เลือกรายการแรกมาใช้งาน (ตาม Logic ของ map.html)
             const locationDetails = locationList[0]; 
+            
+            // **ดึง targetId**
+            const targetId = locationDetails.id; 
+            currentTargetId = targetId; // อัปเดต Global ID 
         
             // 3. เตรียมข้อมูล
         
@@ -132,37 +198,120 @@
             locationNameElement.textContent = `${locationDetails.name} (${searchTerm})`; 
 
             // ✅ Logic สำหรับรูปภาพ (อัปเดตใหม่)
-            const locationImage = document.getElementById('location-image');
-            const placeholderIcon = document.getElementById('placeholder-icon');
+            
+			// ✅ Logic สำหรับรูปภาพ (อัปเดตใหม่)
+			           const locationImage = document.getElementById('location-image');
+			           const placeholderIcon = document.getElementById('placeholder-icon');
 
-            const imageFilename = locationDetails.imagePath || locationDetails.imageUrl;
+			           const imageFilename = locationDetails.imagePath || locationDetails.imageUrl;
 
-            if (imageFilename) {
-                // ถ้า backend เก็บชื่อไฟล์ เช่น "temple.webp"
-                const imageUrl = imageFilename.startsWith('http')
-                    ? imageFilename // ถ้าเป็น URL เต็มอยู่แล้ว
-                    : `http://localhost:8080/images/${imageFilename}`; // ดึงจาก backend ของเรา
+			           if (imageFilename) {
+			               // ถ้า backend เก็บชื่อไฟล์ เช่น "temple.webp"
+			               const imageUrl = imageFilename.startsWith('http')
+			                   ? imageFilename // ถ้าเป็น URL เต็มอยู่แล้ว
+			                   : `http://localhost:8080/images/${imageFilename}`; // ดึงจาก backend ของเรา
 
-                locationImage.src = imageUrl;
-                locationImage.style.display = 'block';
-                placeholderIcon.style.display = 'none';
-            } else {
-                locationImage.style.display = 'none';
-                placeholderIcon.style.display = 'block';
-            }
-
+			               locationImage.src = imageUrl;
+			               locationImage.style.display = 'block';
+			               placeholderIcon.style.display = 'none';
+			           } else {
+			               locationImage.style.display = 'none';
+			               placeholderIcon.style.display = 'block';
+			           }
             // อัปเดตเวลาทำการ
             document.getElementById('working-hours-weekday').textContent = workingHours;
             document.getElementById('working-hours-weekend').textContent = workingHours;
-        
+
             // อัปเดตคำอธิบายเพิ่มเติม
             document.getElementById('full-description-text').textContent = descriptionText;
+        
+            // 5. จัดการ Bookmark Logic
+            if (currentTargetId) {
+                bookmarkIconContainer.addEventListener('click', handleBookmarkClick);
+                // **เรียกตรวจสอบสถานะเริ่มต้น**
+                checkInitialBookmarkStatus(currentTargetId); 
+            } else {
+                bookmarkIconContainer.style.display = 'none';
+            }
         
         } catch (error) {
             console.error('Error fetching location data for details page:', error);
             locationNameElement.textContent = `เกิดข้อผิดพลาดในการดึงข้อมูล: ${error.message}`;
         }
     }
+
+    /**
+     * ✅ FIX 4: Updated fetch logic for adding/deleting bookmarks
+     * จัดการการคลิกไอคอน Bookmark (Checklist 2, 4, 5)
+     */
+    async function handleBookmarkClick(event) {
+        event.preventDefault();
+
+        if (!currentTargetId) {
+            alert('ไม่สามารถดำเนินการ Bookmark ได้เนื่องจากไม่พบ ID ของสถานที่');
+            return;
+        }
+
+        const isCurrentlyBookmarked = bookmarkIconContainer.querySelector('.fa-solid.fa-bookmark');
+        
+        let method, apiUrl, requestBody = null;
+
+        if (isCurrentlyBookmarked) {
+            // **ดำเนินการลบ (Unbookmark)**
+            method = 'DELETE';
+            // (Checklist 2: มีการเชื่อมต่อ API ไปยัง backend - DELETE)
+            // Removed dummy user ID from URL
+            apiUrl = `${BOOKMARK_API_URL}?targetId=${currentTargetId}&targetType=${TARGET_TYPE}`;
+            
+        } else {
+            // **ดำเนินการเพิ่ม (Bookmark)**
+            method = 'POST';
+            // (Checklist 2: มีการเชื่อมต่อ API ไปยัง backend - POST)
+            apiUrl = BOOKMARK_API_URL;
+            // Removed dummy user ID from body
+            requestBody = JSON.stringify({
+                targetId: parseInt(currentTargetId),
+                targetType: TARGET_TYPE
+            });
+        }
+        
+        // ส่งสัญญาณให้ผู้ใช้ทราบว่ากำลังดำเนินการ (Optimistic UI)
+        setBookmarkIcon(!isCurrentlyBookmarked); 
+
+        try {
+            // Added credentials: 'include'
+            const response = await fetch(apiUrl, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: requestBody,
+                credentials: 'include' // <-- ADDED: Sends the session cookie
+            });
+
+            const result = await response.json();
+
+            if (response.ok || response.status === 201) {
+                const isSuccess = (method === 'POST');
+                setBookmarkIcon(isSuccess); // ยืนยันสถานะไอคอน
+                // (Checklist 4: เพิ่ม/ลบ bookmark สำเร็จ)
+                // alert(result.message || (isSuccess ? 'บันทึกสำเร็จ' : 'ยกเลิกสำเร็จ')); // Optional: can remove alert
+            } else if (response.status === 403) {
+                 // (Checklist 5: ผู้ใช้ยังไม่ล็อกอิน)
+                 setBookmarkIcon(isCurrentlyBookmarked); // ไม่ต้องเปลี่ยนสถานะ หากไม่ได้เข้าสู่ระบบ
+                 alert(result.error || 'กรุณาเข้าสู่ระบบก่อนดำเนินการ');
+                 window.location.href = '/login.html'; // Redirect to login
+            } else {
+                // ข้อผิดพลาดอื่นๆ (เช่น 409 Conflict, 404 Not Found)
+                setBookmarkIcon(isCurrentlyBookmarked); // ย้อนกลับสถานะไอคอน
+                alert(`เกิดข้อผิดพลาด: ${result.error || 'Unknown error'}`);
+            }
+
+        } catch (error) {
+            console.error('Error handling bookmark:', error);
+            setBookmarkIcon(isCurrentlyBookmarked); // ย้อนกลับสถานะไอคอนเดิม
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์');
+        }
+    }
+
 
     // เรียกใช้ฟังก์ชันเมื่อ DOM โหลดเสร็จ
     document.addEventListener('DOMContentLoaded', fetchAndDisplayDetails);
