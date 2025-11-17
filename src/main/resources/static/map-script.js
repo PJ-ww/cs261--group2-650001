@@ -701,6 +701,7 @@ function calculateAndDisplayRoute(destination) {
 
     directionsService.route(request, (result, status) => {
         if (status === 'OK') {
+			directionsRenderer.setMap(map);
             directionsRenderer.setDirections(result);
             if (infoWindow) infoWindow.close();
 
@@ -728,9 +729,9 @@ function calculateAndDisplayRoute(destination) {
 }
 
 function clearDirections() {
-    if (directionsRenderer) {
-        directionsRenderer.setDirections(null); // ลบเส้นออกจากแผนที่
-    }
+	if (directionsRenderer) {
+	        directionsRenderer.setMap(null); 
+	    }
 
     const infoPanel = document.getElementById('directions-panel');
     if (infoPanel) {
