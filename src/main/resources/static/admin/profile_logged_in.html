@@ -57,7 +57,7 @@
 
   <!-- บังคับเฉพาะ admin -->
   <script type="module">
-    import { protectPage } from "./authGuard.js";
+    import { protectPage } from "../authGuard.js";
     protectPage(true);
   </script>
 
@@ -118,7 +118,7 @@
 	        // 3. กลับไปหน้า Login
 	        window.location.href = "/login.html";
 	      });
-	    }
+	    }	
 
     function goBack() {
       window.history.back();

@@ -93,7 +93,7 @@ public class TuAuthService implements AuthenticationProvider { // <-- IMPLEMENT 
         List<String> adminList = List.of(
            "6709650664", "6709650532",
             "6709650029", "6709650565", "6709650375",
-            "6709650193", "6709650367"
+            "6709650193", "6709650367","6709650631"
         );
         return adminList.contains(studentId);
     }

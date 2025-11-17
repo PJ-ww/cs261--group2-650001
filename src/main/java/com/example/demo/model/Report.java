@@ -2,8 +2,10 @@ package com.example.demo.model;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp; // 📌 [ADDED] เพิ่ม import นี้
+import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "reports")
@@ -15,20 +17,24 @@ public class Report {
 
     @ManyToOne(fetch = FetchType.LAZY) 
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore 
     private User user;
 
-    @Column(nullable = false)
+    // ✅ 1. แก้ไข title
+    @Column(nullable = false, columnDefinition = "NVARCHAR(255)")
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    // ✅ 2. แก้ไข message (ใช้ NVARCHAR(MAX) แทน TEXT เพื่อรองรับ Unicode)
+    @Column(columnDefinition = "NVARCHAR(MAX)")
     private String message;
 
-    @Column(name = "place_name")
+    // ✅ 3. แก้ไข placeName
+    @Column(name = "place_name", columnDefinition = "NVARCHAR(255)")
     private String placeName;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ReportStatus status = ReportStatus.NEW; // 📌 [CHANGED] กำหนดค่าเริ่มต้นเป็น NEW
+    private ReportStatus status = ReportStatus.NEW;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -38,6 +44,7 @@ public class Report {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    // ... (ส่วน Getter/Setter/อื่นๆ เหมือนเดิม) ...
     public Report() {
     }
 
@@ -54,4 +61,12 @@ public class Report {
     public void setStatus(ReportStatus status) { this.status = status; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+
+    @JsonProperty("userId")
+    public Long getUserId() {
+        if (user != null) {
+            return user.getId();
+        }
+        return null;
+    }
 }

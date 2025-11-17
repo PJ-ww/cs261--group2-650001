@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายการแจ้งปัญหา - TU COMPASS</title>
+
+    <link rel="stylesheet" href="admin-style.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        
+        <header>
+            <i class="fas fa-flag"></i> รายการแจ้งปัญหา
+        </header>
+        
+        <main>
+            <div class="actions-bar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="ค้นหารายงานปัญหา">
+                </div>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>User ID</th>
+                        <th>หัวข้อ</th>
+                        <th>รายละเอียด</th>
+                        <th>สถานที่</th>
+                        <th style="width: 170px;">สถานะ</th>
+                    </tr>
+                </thead>
+                <tbody id="report-table-body">
+                    </tbody>
+            </table>
+            
+            <div class="pagination" id="pagination-wrapper"></div>
+        </main>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="admin-map.html" class="nav-item">
+            <i class="fas fa-home"></i><span>Home</span>
+        </a>
+        <a href="category.html" class="nav-item">
+            <i class="fas fa-cog"></i><span>Category</span>
+        </a>
+        <a href="admin-report.html" class="nav-item active"> <i class="fas fa-flag"></i><span>Admin Report</span>
+        </a>
+        <a href="/admin/profile_logged_in.html" class="nav-item">
+            <i class="fas fa-user"></i><span>Profile</span>
+        </a>
+    </div>
+
+    <script>
+        /* ============================================
+           Script สำหรับหน้า Admin Report
+        ============================================ */
+
+        // 1. ฟังก์ชันสำหรับดึงข้อมูลและสร้างตาราง
+        async function loadReports() {
+            const tableBody = document.getElementById("report-table-body");
+            
+            if (!tableBody) {
+                console.error("ไม่พบ <tbody> ที่มี id 'report-table-body'");
+                return;
+            }
+
+            try {
+                const response = await fetch("http://localhost:8080/api/reports/admin/all", {
+                    method: "GET",
+                    credentials: "include"
+                });
+
+                if (!response.ok) {
+                    tableBody.innerHTML = `<tr class="error-row"><td colspan="6">❌ คุณไม่ใช่ Admin หรือไม่สามารถเชื่อมต่อได้</td></tr>`;
+                    return;
+                }
+
+                const reports = await response.json();
+                
+                if (reports.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center;">-- ไม่มีรายการแจ้งปัญหา --</td></tr>`;
+                    return;
+                }
+
+                tableBody.innerHTML = ""; // เคลียร์ตาราง
+
+                reports.forEach(r => {
+                    const row = document.createElement("tr");
+
+                    row.innerHTML = `
+                        <td>${r.id}</td>
+                        <td>${r.userId}</td>
+                        <td>${r.title}</td>
+                        <td>${r.message}</td>
+                        <td>${r.placeName || "-"}</td>
+                        <td class="actions-cell">
+                            <select class="report-status-select" data-id="${r.id}">
+                                <option value="NEW" ${r.status === "NEW" ? "selected" : ""}>🔴 ใหม่</option>
+                                <option value="IN_PROGRESS" ${r.status === "IN_PROGRESS" ? "selected" : ""}>🟠 กำลังดำเนินการ</option>
+                                <option value="DONE" ${r.status === "DONE" ? "selected" : ""}>🟢 แก้ไขแล้ว</option>
+                            </select>
+                        </td>
+                    `;
+
+                    tableBody.appendChild(row);
+                });
+
+                // เพิ่ม Event Listeners หลังจากสร้างตารางเสร็จ
+                addSelectListeners();
+
+            } catch (error) {
+                console.error("Error fetching reports:", error);
+                tableBody.innerHTML = `<tr class="error-row"><td colspan="6">❌ เกิดข้อผิดพลาด: ${error.message}</td></tr>`;
+            }
+        }
+
+        // 2. ฟังก์ชันสำหรับอัปเดตสถานะ
+        async function updateStatus(id, status) {
+            console.log(`Updating ID: ${id} to Status: ${status}`);
+            try {
+                await fetch(`http://localhost:8080/api/reports/admin/${id}/status?status=${status}`, {
+                    method: "PATCH",
+                    credentials: "include"
+                });
+                // (อาจจะเพิ่ม feedback สีเขียวว่า "บันทึกแล้ว")
+            } catch (error) {
+                console.error("Error updating status:", error);
+                alert("อัปเดตสถานะไม่สำเร็จ");
+            }
+        }
+
+        // 3. ฟังก์ชันสำหรับดักฟังการเปลี่ยนแปลง <select>
+        function addSelectListeners() {
+            document.querySelectorAll(".report-status-select").forEach(select => {
+                select.addEventListener("change", (e) => {
+                    const id = e.target.dataset.id;
+                    const status = e.target.value;
+                    updateStatus(id, status);
+                });
+            });
+        }
+
+        // 4. สั่งให้ฟังก์ชันทำงานทันทีที่หน้าเว็บโหลด
+        document.addEventListener("DOMContentLoaded", loadReports);
+
+    </script>
+    
+    <script type="module">
+        import { protectPage } from "../authGuard.js";
+        protectPage(true);
+    </script>
+    
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const raw = localStorage.getItem("student_info");
+        if (!raw) return;
+        try {
+            const parsed = JSON.parse(raw);
+            const data = parsed.data ? parsed.data : parsed;
+            if (data.displayname_en) {
+                const firstName = data.displayname_en.split(" ")[0];
+                const navLabel = document.querySelector(".bottom-nav .nav-item:last-child span");
+                if (navLabel) navLabel.textContent = firstName;
+            }
+        } catch (err) { console.error("Error reading admin user", err); }
+    });
+    </script>
+
+</body>
+</html>

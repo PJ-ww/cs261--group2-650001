@@ -3,6 +3,8 @@ package com.example.demo.controller;
 import com.example.demo.model.Report;
 import com.example.demo.model.User;
 import com.example.demo.service.ReportService;
+// ✅ 1. เพิ่ม import นี้
+import com.example.demo.repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,10 @@ public class ReportController {
     @Autowired
     private ReportService reportService;
 
+    // ✅ 2. Inject UserRepository เข้ามา
+    @Autowired
+    private UserRepository userRepository;
+
     // ส่งเรื่อง Report 
     @PostMapping("/submit")
     public ResponseEntity<?> submitReport(
@@ -30,12 +36,16 @@ public class ReportController {
             return ResponseEntity.status(403).body(Map.of("error", "กรุณาเข้าสู่ระบบก่อนส่งเรื่อง"));
         }
 
-        User user = (User) authentication.getPrincipal();
+        // 3. ดึง User ที่ "Detached" (ลอยๆ) ออกมาจาก Security
+        User detachedUser = (User) authentication.getPrincipal();
         
-        
+        // ✅ 4. ใช้ ID จาก User นั้น ค้นหา User ตัวจริงที่ "Managed" (เชื่อมกับ DB)
+        //    นี่คือการยืนยันว่า User นี้มีอยู่จริงในตาราง users
+        User managedUser = userRepository.findById(detachedUser.getId())
+                .orElseThrow(() -> new RuntimeException("ไม่พบผู้ใช้ในระบบ"));
 
-        report.setUser(user);
-
+        // ✅ 5. สั่ง setUser โดยใช้ User ที่ "Managed"
+        report.setUser(managedUser);
 
         Report saved = reportService.submitReport(report);
 

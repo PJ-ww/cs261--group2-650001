@@ -6,6 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ReportRepository extends JpaRepository<Report, Long> {
-    List<Report> findByUserId(Long userId);
+    // ✅ แก้ไขตรงนี้
+    // ใช้ findByUser_Id เพื่อบอก JPA ว่า ให้ไปหา field 'user' 
+    // แล้วดู 'id' ที่อยู่ข้างใน field 'user' อีกที
+    List<Report> findByUser_Id(Long userId); 
+    
     List<Report> findByStatus(ReportStatus status);
 }

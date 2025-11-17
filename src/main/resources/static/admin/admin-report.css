@@ -1,0 +1,175 @@
+/* General Styling */
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
+
+body {
+    font-family: 'Sarabun', sans-serif;
+    margin: 0;
+    background-color: #424242;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    color: #333;
+}
+
+/* 1. โครงสร้าง Dashboard (ใช้กับทุกหน้า) */
+.dashboard-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 20px;
+    padding-bottom: 80px;
+    background: #fff; /* [เพิ่ม] พื้นหลังสีขาว */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    overflow: hidden;
+}
+header {
+    background-color: #B71C1C;
+    color: white;
+    padding: 15px 20px;
+    font-size: 1.2em;
+    font-weight: bold;
+    /* [แก้ไข] จัดไอคอนใน Header */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+main {
+    background-color: #f5f5f5;
+    padding: 20px;
+}
+
+/* 2. แถบ Action (Search/Add) */
+.actions-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.search-box {
+    position: relative;
+}
+.search-box input {
+    padding: 10px 10px 10px 35px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 250px;
+}
+.search-box i {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+}
+.add-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+}
+.add-button i {
+    margin-right: 5px;
+}
+
+/* 3. ตารางข้อมูล (Data Table) */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.data-table th, .data-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+.data-table th {
+    background-color: #e0e0e0;
+    font-weight: bold;
+}
+.data-table .actions-cell {
+    position: relative;
+    text-align: center;
+}
+.data-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* (โค้ด Dropdown ของ Dashboard) */
+.menu-icon { cursor: pointer; padding: 5px; border-radius: 50%; }
+.menu-icon:hover { background-color: #f0f0f0; }
+.dropdown-menu { display: none; position: absolute; right: 25px; top: 10px; background-color: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); z-index: 100; width: 120px; overflow: hidden; }
+.dropdown-menu.show { display: block; }
+.dropdown-menu a { display: flex; align-items: center; gap: 10px; padding: 10px 15px; color: #333; text-decoration: none; font-size: 0.9em; }
+.dropdown-menu a:hover { background-color: #f5f5f5; }
+.dropdown-menu a .fa-trash-alt { color: #B71C1C; }
+.row-pending-deletion { background-color: #ffebee !important; transition: background-color 0.3s; }
+.confirm-btn { color: #fff !important; background-color: #d32f2f !important; font-weight: bold; }
+
+/* 4. Pagination (Bottom Nav) */
+.pagination { display: flex; justify-content: center; align-items: center; margin-top: 20px; }
+.pagination button { background-color: #fff; border: 1px solid #ddd; color: #333; cursor: pointer; padding: 8px 12px; margin: 0 3px; border-radius: 4px; transition: background-color 0.2s; }
+.pagination button:hover { background-color: #f5f5f5; }
+.pagination button.active { background-color: #B71C1C; color: white; border-color: #B71C1C; }
+.pagination button:disabled { background-color: #f5f5f5; color: #aaa; cursor: not-allowed; }
+
+
+/* 5. Bottom Nav (ใช้ร่วมกัน) */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 65px;
+  background-color: #fff;
+  border-top: 1px solid #ccc;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+}
+.nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; color: #666; font-size: 13px; transition: all 0.2s ease; }
+.nav-item i { font-size: 22px; margin-bottom: 3px; }
+.nav-item.active { color: #801d1d; font-weight: bold; }
+.nav-item:hover { color: #801d1d; transform: translateY(-2px); }
+
+
+/* 🔻 6. [เพิ่ม] สไตล์สำหรับหน้า Report (แจ้งปัญหา) 🔻 */
+.data-table .report-status-select {
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #bbb;
+    background-color: #fff;
+    cursor: pointer;
+    outline: none;
+    transition: 0.2s;
+    width: 100%; /* ทำให้เต็มช่อง */
+    font-family: 'Sarabun', sans-serif;
+    font-size: 0.95em;
+}
+.data-table .report-status-select:hover {
+    border-color: #B71C1C;
+}
+.report-status-select option[value="NEW"] {
+    color: #B71C1C;
+    font-weight: bold;
+}
+.report-status-select option[value="IN_PROGRESS"] {
+    color: #EF6C00;
+    font-weight: bold;
+}
+.report-status-select option[value="DONE"] {
+    color: #2E7D32;
+    font-weight: bold;
+}
+.error-row td { /* ❗ [เพิ่ม] สไตล์สำหรับแถว Error */
+    background-color: #ffebee !important;
+    text-align: center !important;
+    font-weight: bold;
+    color: #C62828;
+}
