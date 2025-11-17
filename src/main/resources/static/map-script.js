@@ -247,7 +247,7 @@ async function handleBookmarkClick(buttonElement, locationId, locationName) {
 
         if (response.status === 403) {
             alert("กรุณาเข้าสู่ระบบก่อนบันทึกรายการโปรด");
-            window.location.href = '/login.html';
+            // ⛔️ [แก้ไข] ลบบรรทัด redirect ออกจากตรงนี้
             return;
         }
 
@@ -267,7 +267,7 @@ async function handleBookmarkClick(buttonElement, locationId, locationName) {
             buttonElement.innerHTML = `<i class="fa-solid fa-bookmark"></i> บันทึกแล้ว`;
         }
         
-        // alert(isCurrentlyBookmarked ? 'ลบออกจากรายการโปรดแล้ว' : 'บันทึกในรายการโปรดแล้ว');
+        alert(isCurrentlyBookmarked ? 'ลบออกจากรายการโปรดแล้ว' : 'บันทึกในรายการโปรดแล้ว');
 
     } catch (error) {
         console.error("Bookmark action failed:", error);

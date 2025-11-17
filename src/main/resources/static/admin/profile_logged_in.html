@@ -101,10 +101,24 @@
       }
     });
 
-    function logout() {
-      localStorage.clear();
-      window.location.href = "/login.html";
-    }
+	function logout() {
+	      // 1. เรียก API ของ Server เพื่อทำลาย Session และลบ Cookie
+	      fetch('/api/logout', {
+	        method: 'POST',
+	        credentials: 'include' 
+	      })
+	      .catch(err => {
+	        // แม้จะพลาด ก็ยังพยายามเคลียร์ฝั่ง Client
+	        console.error('Logout API call failed, proceeding...', err);
+	      })
+	      .finally(() => {
+	        // 2. เคลียร์ข้อมูลฝั่ง Client (หลังจากเรียก API เสมอ)
+	        localStorage.clear();
+	        
+	        // 3. กลับไปหน้า Login
+	        window.location.href = "/login.html";
+	      });
+	    }
 
     function goBack() {
       window.history.back();

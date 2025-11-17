@@ -45,11 +45,6 @@
 
                 <hr class="info-separator">
 
-                <!--<div class="density-status">
-                    <p><strong>สถานะปัจจุบัน:</strong></p>
-                    <div class="density-level-box" id="density-status-box">...</div>
-                </div>-->
-
                 <div class="description-block">
                     <h2>เวลาเปิด-ปิดทำการ</h2>
                     <div class="schedule-detail">
@@ -67,7 +62,6 @@
         </main>
     </div>
 
-<!-- ✅ FIX 1: Point to the correct map script at the root -->
 <script src="../map-script.js"></script>
 
 <script>
@@ -292,8 +286,10 @@
             if (response.ok || response.status === 201) {
                 const isSuccess = (method === 'POST');
                 setBookmarkIcon(isSuccess); // ยืนยันสถานะไอคอน
-                // (Checklist 4: เพิ่ม/ลบ bookmark สำเร็จ)
-                // alert(result.message || (isSuccess ? 'บันทึกสำเร็จ' : 'ยกเลิกสำเร็จ')); // Optional: can remove alert
+                
+                // ✅ เปิดการแจ้งเตือน
+                alert(result.message || (isSuccess ? 'บันทึกสำเร็จ' : 'ยกเลิกสำเร็จ'));
+                
             } else if (response.status === 403) {
                  // (Checklist 5: ผู้ใช้ยังไม่ล็อกอิน)
                  setBookmarkIcon(isCurrentlyBookmarked); // ไม่ต้องเปลี่ยนสถานะ หากไม่ได้เข้าสู่ระบบ
