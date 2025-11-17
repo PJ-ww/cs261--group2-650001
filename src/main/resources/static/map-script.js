@@ -219,6 +219,30 @@ async function initMap() {
         console.error('Error fetching locations:', error);
         populateFilterModal([]); // แสดง "ไม่พบหมวดหมู่"
     }
+
+    // ---------------------------------
+    // ✅ [โค้ดส่วนที่เพิ่ม]
+    // ---------------------------------
+    // ตรวจสอบ query parameter 'search' ตอนโหลดหน้า
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchTermFromUrl = urlParams.get('search');
+
+    if (searchTermFromUrl) {
+        const decodedTerm = decodeURIComponent(searchTermFromUrl);
+        console.log("พบคำค้นหาจาก URL:", decodedTerm);
+        
+        // ใส่คำค้นหาลงในช่อง search
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) {
+            searchInput.value = decodedTerm;
+        }
+        
+        // เรียกฟังก์ชันค้นหาและปักหมุด
+        fetchAndDisplayDetails(decodedTerm);
+    }
+    // ---------------------------------
+    // ✅ [จบส่วนที่เพิ่ม]
+    // ---------------------------------
 }
 
 /**
@@ -247,7 +271,7 @@ async function handleBookmarkClick(buttonElement, locationId, locationName) {
 
         if (response.status === 403) {
             alert("กรุณาเข้าสู่ระบบก่อนบันทึกรายการโปรด");
-            // ⛔️ [แก้ไข] ลบบรรทัด redirect ออกจากตรงนี้
+            // ⛔️ [แก้ไข] ลบบรรทัด redirect ออก
             return;
         }
 
@@ -267,6 +291,7 @@ async function handleBookmarkClick(buttonElement, locationId, locationName) {
             buttonElement.innerHTML = `<i class="fa-solid fa-bookmark"></i> บันทึกแล้ว`;
         }
         
+        // ✅ เปิดการแจ้งเตือน
         alert(isCurrentlyBookmarked ? 'ลบออกจากรายการโปรดแล้ว' : 'บันทึกในรายการโปรดแล้ว');
 
     } catch (error) {
