@@ -151,7 +151,8 @@ async function initMap() {
                     
                     <div class="popup-actions">
                         ${bookmarkButtonHtml}
-                        <a href="user/detail.html?shortName=${encodeURIComponent(location.name)}" class="details-btn">
+                        
+                        <a href="detail.html?shortName=${encodeURIComponent(location.name)}" class="details-btn">
                             ดูรายละเอียด
                         </a>
                     </div>
@@ -532,7 +533,8 @@ async function fetchAndDisplayDetails(searchTerm) {
             <p>เวลาทำการ: ${workingHours}</p>
             <div class="popup-actions">
                 ${bookmarkButtonHtml}
-                <a href="user/detail.html?shortName=${encodeURIComponent(shortName)}" class="details-btn">
+                
+                <a href="detail.html?shortName=${encodeURIComponent(shortName)}" class="details-btn">
                     ดูรายละเอียด
                 </a>
             </div>
