@@ -39,11 +39,16 @@
         <button id="my-location-btn">
             <i class="fas fa-location-crosshairs"></i>
         </button>
+		<!-- Report Button -->
+		<button id="report-btn" class="report-btn">
+		    <i class="fas fa-flag"></i>
+		</button>
     </div>
-
+	
     <!-- Dynamic Navbar -->
     <footer class="bottom-nav" id="bottom-nav"></footer>
-
+	
+	
     <div id="directions-panel"></div>
 </div>
 
@@ -128,6 +133,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 </script>
-
+<script>
+document.getElementById("report-btn").onclick = () => {
+    window.location.href = "/form.html"; 
+};
+</script>
 </body>
 </html>
