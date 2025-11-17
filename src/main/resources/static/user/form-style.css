@@ -32,6 +32,27 @@ header {
     font-size: 1.2em;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
+    
+    /* ✅ เพิ่ม: สำหรับการจัดวางปุ่มย้อนกลับ */
+    position: relative; 
+    display: flex; 
+    align-items: center;
+    justify-content: center;
+}
+
+/* 🎯 สไตล์สำหรับปุ่มย้อนกลับที่มุมซ้ายบน */
+.back-button {
+    position: absolute;
+    left: 20px; /* ตำแหน่งจากขอบซ้าย */
+    color: white;
+    text-decoration: none;
+    font-size: 1.2em; 
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.back-button:hover {
+    color: #ff9999; /* เอฟเฟกต์เมื่อ hover */
 }
 
 main {
@@ -78,14 +99,20 @@ main {
 /* --- ปุ่มส่งเรื่อง --- */
 .button-group {
     padding-top: 10px;
+    /* ✅ แก้: หากต้องการให้ปุ่มส่งเรื่องอยู่ตรงกลาง */
+    display: flex;
+    justify-content: center;
 }
 
 .btn {
-    width: 100%;
     padding: 12px 25px;
     border: none;
     border-radius: 5px;
     font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    flex: 1; /* Allow buttons to grow and shrink */
+    max-width: 48%;
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.2s;
@@ -98,4 +125,23 @@ main {
 
 .btn-save:hover {
     background-color: #801d1d;
+}
+
+.btn-back {
+    background-color: #a2a8ad; /* Grey */
+    color: white;
+	margin-right: 2.5%;
+
+.btn-back:hover {
+    background-color: #5a6268;
+}
+
+/* Optional: Make buttons full width on smaller screens */
+@media (max-width: 600px) {
+    .button-group {
+        flex-direction: column;
+    }
+    .btn {
+        max-width: 100%;
+    }
 }

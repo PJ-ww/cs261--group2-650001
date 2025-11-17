@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /*                                Start                                       */
     /* -------------------------------------------------------------------------- */
     const start = async () => {
-        emptyMessage.textContent = "กำลังโหลดรายการโปรด...";
+        emptyMessage.textContent = "ไม่มีรายการโปรด...";
         emptyMessage.style.display = "block";
 
         const list = await fetchUserFavorites();
