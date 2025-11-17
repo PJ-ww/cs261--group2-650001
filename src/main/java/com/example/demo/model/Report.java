@@ -1,6 +1,8 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp; // 📌 [ADDED] เพิ่ม import นี้
 import java.time.LocalDateTime;
 
 @Entity
@@ -11,38 +13,45 @@ public class Report {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId;            // ผู้ส่งเรื่อง
+    @ManyToOne(fetch = FetchType.LAZY) 
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    private String title;           // จุดประสงค์
+    @Column(nullable = false)
+    private String title;
 
     @Column(columnDefinition = "TEXT")
-    private String message;         // รายละเอียดปัญหา
+    private String message;
 
-    private String placeName;       // ระบุสถานที่ (ไม่บังคับ)
+    @Column(name = "place_name")
+    private String placeName;
 
-    private String status = "NEW";  // NEW / IN_PROGRESS / DONE
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ReportStatus status = ReportStatus.NEW; // 📌 [CHANGED] กำหนดค่าเริ่มต้นเป็น NEW
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
-    @PreUpdate
-    public void setUpdatedAt() {
-        this.updatedAt = LocalDateTime.now();
+    public Report() {
     }
 
-
     public Long getId() { return id; }
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
     public String getPlaceName() { return placeName; }
     public void setPlaceName(String placeName) { this.placeName = placeName; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public ReportStatus getStatus() { return status; }
+    public void setStatus(ReportStatus status) { this.status = status; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 }

@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.model.Report;
+import com.example.demo.model.ReportStatus; 
 import com.example.demo.repository.ReportRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ public class ReportService {
     }
 
     public List<Report> getUserReports(Long userId) {
+
         return reportRepository.findByUserId(userId);
     }
 
@@ -25,11 +27,18 @@ public class ReportService {
         return reportRepository.findAll();
     }
 
-    public Report updateStatus(Long id, String status) {
+    public Report updateStatus(Long id, String statusString) {
         Report report = reportRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("ไม่พบรายงาน"));
 
-        report.setStatus(status);
-        return reportRepository.save(report);
+
+        try {
+            ReportStatus newStatus = ReportStatus.valueOf(statusString.toUpperCase());
+            report.setStatus(newStatus);
+            return reportRepository.save(report);
+        } catch (IllegalArgumentException e) {
+
+            throw new RuntimeException("สถานะไม่ถูกต้อง: " + statusString);
+        }
     }
 }

@@ -20,7 +20,7 @@ public class ReportController {
     @Autowired
     private ReportService reportService;
 
-    //  ส่งเรื่อง Report
+    // ส่งเรื่อง Report 
     @PostMapping("/submit")
     public ResponseEntity<?> submitReport(
             @RequestBody Report report,
@@ -31,17 +31,21 @@ public class ReportController {
         }
 
         User user = (User) authentication.getPrincipal();
-        report.setUserId(user.getId());
+        
+        
+
+        report.setUser(user);
+
 
         Report saved = reportService.submitReport(report);
 
         return ResponseEntity.ok(Map.of(
-            "message", "ส่งเรื่องสำเร็จ",
-            "reportId", saved.getId()
+                "message", "ส่งเรื่องสำเร็จ",
+                "reportId", saved.getId()
         ));
     }
 
-    // User ดูเรื่องที่ตัวเองเคยส่ง
+    //  User ดูเรื่องที่ตัวเองเคยส่ง
     @GetMapping("/my")
     public ResponseEntity<?> getMyReports(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -54,7 +58,7 @@ public class ReportController {
         return ResponseEntity.ok(reports);
     }
 
-    //  Admin ดูเรื่องทั้งหมด
+    // Admin ดูเรื่องทั้งหมด 
     @GetMapping("/admin/all")
     public ResponseEntity<?> getAllReports(Authentication authentication) {
 
@@ -66,11 +70,11 @@ public class ReportController {
         return ResponseEntity.ok(reportService.getAllReports());
     }
 
-    //  Admin เปลี่ยนสถานะเรื่อง
+    //  Admin เปลี่ยนสถานะเรื่อง 
     @PatchMapping("/admin/{id}/status")
     public ResponseEntity<?> updateStatus(
             @PathVariable Long id,
-            @RequestParam String status,
+            @RequestParam String status, 
             Authentication authentication) {
 
         User user = (User) authentication.getPrincipal();
@@ -78,8 +82,12 @@ public class ReportController {
             return ResponseEntity.status(403).body(Map.of("error", "เฉพาะ Admin เท่านั้น"));
         }
 
-        Report updated = reportService.updateStatus(id, status);
+        try {
+            Report updated = reportService.updateStatus(id, status);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
 
-        return ResponseEntity.ok(updated);
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }
