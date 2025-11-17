@@ -29,7 +29,7 @@ public class TuAuthService implements AuthenticationProvider { // <-- IMPLEMENT 
     @Value("${tu.api.application-key}")
     private String applicationKey;
 
-    private static final String TU_VERIFY_API_URL = "https://restapi.tu.ac.th/api/v1/auth/Ad/verify";
+    private static final String TU_VERIFY_API_URL = "http://restapi.tu.ac.th/api/v1/auth/Ad/verify";
 
     /**
      * This is the new method Spring Security will call.
