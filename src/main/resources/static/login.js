@@ -57,13 +57,15 @@ async function login() {
       // ✅ --- END OF FIX ---
 
       // 🔹 4. Save the data (either real data or fallback)
-      localStorage.setItem("tu_token", data.message);
-      localStorage.setItem("student_info", JSON.stringify(userProfile)); // This is now safe
-      localStorage.setItem("role", data.role);
-	  localStorage.setItem("userId", String(parseInt(userId, 10)));
-	  
-      // 🔹 5. Redirect based on role
-      if (data.role === "ROLE_ADMIN") {
+	  localStorage.setItem("tu_token", data.message);
+	        localStorage.setItem("student_info", JSON.stringify(userProfile)); // This is now safe
+	        localStorage.setItem("role", data.role);
+	        
+	        // ✅ แก้ไขบรรทัดนี้: เปลี่ยนจาก userId เป็น data.userId
+	  	  localStorage.setItem("userId", String(parseInt(data.userId, 10)));
+	  	  
+	        // 🔹 5. Redirect based on role
+	        if (data.role === "ROLE_ADMIN")  {
         window.location.href = "/admin/dashboard.html";
       } else {
         // Redirect to your new user profile page
