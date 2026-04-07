@@ -1,27 +1,49 @@
-version: '3.8'
-
 services:
-  
-  # Service 1: Your tu-compass Spring Boot App
+
+  # SQL Server Database
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrong@Passw0rd
+    volumes:
+      - mssql-data:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "YourStrong@Passw0rd" -C -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # Creates the TUCompass database once SQL Server is healthy
+  db-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: >
+      /bin/bash -c "
+      /opt/mssql-tools18/bin/sqlcmd -S db -U sa -P 'YourStrong@Passw0rd' -C -Q \"IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'TUCompass') CREATE DATABASE TUCompass\" &&
+      echo 'Database TUCompass is ready!'
+      "
+
+  # Spring Boot App
   app:
     image: tu-compass-app
-    build: .  # Tells compose to build the image from the Dockerfile in this folder
+    build: .
     ports:
-      - "8080:8080"  # Map host port 8080 to container port 8080
+      - "8080:8080"
     environment:
-      # These variables OVERRIDE your application.properties
-      # This tells your app to connect to the 'db' service instead of 'localhost'
-      - SPRING_DATASOURCE_URL=jdbc:sqlserver://db;databaseName=TUCompass;encrypt=true;trustServerCertificate=true;useUnicode=true;characterEncoding=UTF-8
+      - SPRING_DATASOURCE_URL=jdbc:sqlserver://db:1433;databaseName=TUCompass;encrypt=true;trustServerCertificate=true;useUnicode=true;characterEncoding=UTF-8
       - SPRING_DATASOURCE_USERNAME=sa
       - SPRING_DATASOURCE_PASSWORD=YourStrong@Passw0rd
     depends_on:
-      - db  # Tells this service to wait for the 'db' service to start
+      db:
+        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
 
-  # Service 2: Your SQL Server Database
-  db:
-    image: my-mssql-image:latest  # The image from your screenshot
-    ports:
-      - "1433:1433"  # Map host port 1433 to container port 1433
-    environment:
-      - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=YourStrong@Passw0rd  # This MUST match the password your app uses
+volumes:
+  mssql-data:
